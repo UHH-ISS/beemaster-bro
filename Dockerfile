@@ -52,12 +52,21 @@ RUN git checkout topic/mfischer/deep-cluster && \
 	git submodule update && \
 	cd aux/broker && \
 	git checkout topic/mfischer/broker-multihop && \
-	cd ../.. && \
-	cd aux/broctl && \
-	git checkout topic/mfischer/broctl-overlay && \
 	cd ../..
 
 RUN ./configure
 RUN make -j4 install
 
-CMD bash
+WORKDIR /bro
+
+
+COPY config/etc /usr/local/bro/etc
+
+COPY custom_scripts custom_scripts 
+
+# the auto_event.bro needs this port:
+EXPOSE 9999
+
+# in here is currently only the auto_event bro, which blocks until it receives sth via a broker-client
+# if it would not block, the container would exit immediately.
+CMD /usr/local/bro/bin/bro /bro/custom_scripts
