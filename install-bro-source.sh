@@ -9,9 +9,7 @@ git submodule update
 cd aux/broker
 git checkout topic/mfischer/broker-multihop
 cd ../..
-cd aux/broctl
-git checkout topic/mfischer/broctl-overlay
-cd ../..
+
 ./configure
 make
 sudo make install 
