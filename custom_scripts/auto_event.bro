@@ -5,13 +5,18 @@ global my_event: event(msg: string);
 global remote: event(peer: string, number: int);
 
 event bro_init() {
+	print "auto_event.bro: bro_init()";
 	Broker::enable();
-	Broker::listen(broker_port, "127.0.0.1");
+	Broker::listen(broker_port, "0.0.0.0");
 	Broker::subscribe_to_events("remote/event/");
 	Broker::auto_event("bro/event/new_connection", new_connection);
 	Broker::auto_event("bro/event/my_event", my_event);
 	Broker::auto_event("bro/event/connection_external", connection_external);
-	print "auto_event.bro is sourced!";
+	print "auto_event.bro: bro_init() done";
+}
+
+event bro_done() {
+	print "auto_event.bro: bro_done()";
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
