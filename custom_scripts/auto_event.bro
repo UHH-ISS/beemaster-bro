@@ -1,4 +1,5 @@
 # Configuration
+@load ./dio_log.bro
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "listener";
