@@ -31,7 +31,7 @@ void send_remote_event(broker::endpoint *ep) {
     uint64_t remote_port = 1337;
     std::string transport = "tcp";
     
-    ep->send("remote/event/dionaea", broker::message{"dionaea_connection", ep_name, ts, id, local_ip, local_port, remote_ip, remote_port, transport});
+    ep->send("honeypot/dionaea/", broker::message{"dionaea_connection", ts, id, local_ip, local_port, remote_ip, remote_port, transport});
 }
 
 int main() {

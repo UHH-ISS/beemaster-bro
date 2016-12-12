@@ -66,6 +66,9 @@ COPY config/etc /usr/local/bro/etc
 
 COPY custom_scripts custom_scripts 
 
+# Currently, Bro stores logs in pwd when started. 
+WORKDIR /usr/local/bro/logs
+
 # in here is currently only the auto_event bro, which blocks until it receives sth via a broker-client
 # if it would not block, the container would exit immediately.
 CMD ["/usr/local/bro/bin/bro", "-Q", "/bro/custom_scripts"]
