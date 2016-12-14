@@ -1,1 +1,2 @@
-@load /bro/custom_scripts/auto_event.bro
+@load ./auto_event.bro
+@load ./dio_log.bro
