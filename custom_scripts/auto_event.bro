@@ -6,7 +6,6 @@ redef Broker::endpoint_name = "listener";
 # Simple test event
 global remote: event(peer: string, number: int);
 # Dionaea sample events
-global dionaea_connection_new: event(timestamp: time, id: count, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string);
 global dionaea_connection: event(timestamp: time, id: count, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string); 
 global get_protocol: function(proto_str: string) : transport_proto;
 
