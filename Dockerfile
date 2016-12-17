@@ -54,7 +54,7 @@ RUN git checkout topic/mfischer/deep-cluster && \
 	git checkout topic/mfischer/broker-multihop && \
 	cd ../..
 
-RUN ./configure
+RUN ./configure --disable-broccoli --disable-python
 RUN make -j4 install
 
 WORKDIR /bro
