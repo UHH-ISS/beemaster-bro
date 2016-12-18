@@ -1,9 +1,6 @@
 FROM debian:stretch
 
-RUN apt-get update && \
-	apt-get upgrade -y
-
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
 	build-essential \
 	git \
 	bison \
@@ -59,7 +56,7 @@ RUN make -j4 install
 
 WORKDIR /bro
 
-# the auto_event.bro needs this port:
+# the dionaea_receiver.bro needs this port:
 EXPOSE 9999
 
 COPY config/etc /usr/local/bro/etc
@@ -69,6 +66,6 @@ COPY custom_scripts custom_scripts
 # Currently, Bro stores logs in pwd when started. 
 WORKDIR /usr/local/bro/logs
 
-# in here is currently only the auto_event bro, which blocks until it receives sth via a broker-client
+# in here is currently only the dionaea_receiver bro, which blocks until it receives sth via a broker-client
 # if it would not block, the container would exit immediately.
 CMD ["/usr/local/bro/bin/bro", "-Q", "/bro/custom_scripts"]

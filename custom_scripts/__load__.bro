@@ -1,2 +1,2 @@
-@load ./auto_event.bro
+@load ./dionaea_receiver.bro
 @load ./dio_log.bro

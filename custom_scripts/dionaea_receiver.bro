@@ -1,30 +1,23 @@
-# Configuration
 @load ./dio_log.bro
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "listener";
-# Simple test event
-global remote: event(peer: string, number: int);
-# Dionaea sample events
 global dionaea_connection: event(timestamp: time, id: count, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string); 
 global get_protocol: function(proto_str: string) : transport_proto;
 
 
 event bro_init() {
-    print "auto_event.bro: bro_init()";
+    print "dionaea_receiver.bro: bro_init()";
     Broker::enable();
     Broker::listen(broker_port, "0.0.0.0");
     Broker::subscribe_to_events("honeypot/dionaea/");
-    print "auto_event.bro: bro_init() done";
+    print "dionaea_receiver.bro: bro_init() done";
 }
 event bro_done() {
-    print "auto_event.bro: bro_done()";
+    print "dionaea_receiver.bro: bro_done()";
 }
 
 event dionaea_connection(timestamp: time, id: count, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string) {
-    # This doesnt work yet. We want to concat port and transport(=protocol) values to match broker port format (1337/tcp).
-    #local lport = to_port(string_cat(somethingsomething);
-    #local rport = to_port(rport_str);
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
