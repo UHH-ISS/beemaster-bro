@@ -5,7 +5,7 @@ export {
   
   type Info: record {
     ts: time &log;
-    id: count &log;
+    id: string &log;
     local_ip: addr &log;
     local_port: port &log;
     remote_ip: addr &log; 
