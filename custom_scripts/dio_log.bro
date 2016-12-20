@@ -11,6 +11,7 @@ export {
     remote_ip: addr &log; 
     remote_port: port &log;
     transport: string &log;
+    connector_id: string &log;
   };
 }
 
