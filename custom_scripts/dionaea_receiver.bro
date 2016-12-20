@@ -27,7 +27,7 @@ event dionaea_connection(timestamp: time, id: string, local_ip: addr, local_port
     print fmt("converted ports %s %s", lport, rport);
     local rec: Dio::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport];
 
-    Log::write(Dio_mysql::LOG, rec);
+    Log::write(Dio::LOG, rec);
 }
 
 event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string) {
@@ -38,7 +38,7 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
     print fmt("converted ports %s %s", lport, rport);
     local rec: Dio::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $args=args];
 
-    Log::write(Dio::LOG, rec);
+    Log::write(Dio_mysql::LOG, rec);
 }
 
 
