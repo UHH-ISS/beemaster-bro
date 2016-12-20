@@ -2,7 +2,7 @@
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "listener";
-global dionaea_connection: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, connector_id: string); 
+global dionaea_connection: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, connector_id: string);
 global get_protocol: function(proto_str: string) : transport_proto;
 
 
