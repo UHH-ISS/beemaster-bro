@@ -12,6 +12,7 @@ export {
     remote_port: port &log;
     transport: string &log;
     args: string &log;
+    connector_id: string &log;
   };
 }
 
