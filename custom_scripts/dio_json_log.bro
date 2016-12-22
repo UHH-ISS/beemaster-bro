@@ -5,12 +5,11 @@ export {
   
   type Info: record {
     ts: time &log;
-    dst_ip: time &log;
-    dst_port: string &log;
-    src_hostname: addr &log;
-    src_ip: port &log;
-    src_port: addr &log; 
-    remote_port: port &log;
+    dst_ip: addr &log;
+    dst_port: port &log;
+    src_hostname: string &log;
+    src_ip: addr &log;
+    src_port: port &log; 
     transport: string &log;
     protocol: string &log;
     connector_id: string &log;
