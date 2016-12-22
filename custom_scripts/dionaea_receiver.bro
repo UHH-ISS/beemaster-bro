@@ -35,7 +35,7 @@ event dionaea_access(timestamp: time, dst_ip: addr, dst_port: count, src_hostnam
     local dport: port = count_to_port(dst_port, get_protocol(transport));
 
     print fmt("dionaea_access: timestamp=%s, dst_ip=%s, dst_port=%s, src_hostname=%s, src_ip=%s, src_port=%s, transport=%s, protocol=%s, connector_id=%s", timestamp, dst_ip, dst_port, src_hostname, src_ip, src_port, transport, protocol, connector_id);
-    local rec: Dio_access::Info = [$ts=timestamp, $dst_ip=dst_ip, $dst_port=dst_port, $src_hostname=src_hostname, $src_ip=src_ip, $src_port=src_port, $transport=transport, $protocol=protocol, $connector_id=connector_id];
+    local rec: Dio_access::Info = [$ts=timestamp, $dst_ip=dst_ip, $dst_port=dport, $src_hostname=src_hostname, $src_ip=src_ip, $src_port=sport, $transport=transport, $protocol=protocol, $connector_id=connector_id];
 
     Log::write(Dio_access::LOG, rec);
 }
