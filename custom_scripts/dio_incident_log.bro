@@ -1,7 +1,8 @@
-module Dio;
+module Dio_incident;
 
 export {
   redef enum Log::ID += { LOG };
+  redef LogAscii::empty_field = "EMPTY";
   
   type Info: record {
     ts: time &log;
@@ -16,5 +17,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio::LOG, [$columns=Info, $path="Dionaea"]); 
+  Log::create_stream(Dio_incident::LOG, [$columns=Info, $path="dionaea_incident"]); 
 }
