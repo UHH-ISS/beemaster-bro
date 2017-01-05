@@ -4,8 +4,10 @@ redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "bro-slave";
 global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
 global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string);
+#global log_dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
+#global log_dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string);
 global log_bro: function(msg: string);
-global published_events: set[string] = { "dionaea_access" };
+global published_events: set[string] = { "dionaea_access", "dionaea_mysql" };
 
 
 event bro_init() {
@@ -22,6 +24,7 @@ event bro_init() {
 
     # Try unsolicited option, which should prevent topic issues
     Broker::auto_event("bro/forwarder/dionaea", dionaea_access, [$unsolicited=T]);
+    Broker::auto_event("bro/forwarder/dionaea", dionaea_mysql, [$unsolicited=T]);
     log_bro("dionaea_receiver.bro: bro_init() done");
 }
 
@@ -31,10 +34,16 @@ event bro_done() {
 
 event dionaea_access(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string) {
   log_bro("Dionaea access event received!");
+
+  # forward:
+  event dionaea_access(timestamp, dst_ip, dst_port, src_hostname, src_ip, src_port, transport, protocol, connector_id);
 }
 
 event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string) {
-    log_bro("Dionaea mysql event received!");
+  log_bro("Dionaea mysql event received!");
+
+  # forward:
+  event dionaea_mysql(timestamp, id, local_ip, local_port, remote_ip, remote_port, transport, args, connector_id);
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
