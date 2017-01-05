@@ -2,9 +2,10 @@
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "bro-slave";
-global dionaea_connection: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, connector_id: string);
+global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
+global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string);
 global log_bro: function(msg: string);
-global published_events: set[string] = { "dionaea_connection" };
+global published_events: set[string] = { "dionaea_access" };
 
 
 event bro_init() {
@@ -20,7 +21,7 @@ event bro_init() {
     Broker::register_broker_events("bro/forwarder/dionaea", published_events);
 
     # Try unsolicited option, which should prevent topic issues
-    Broker::auto_event("bro/forwarder/dionaea", dionaea_connection, [$unsolicited=T]);
+    Broker::auto_event("bro/forwarder/dionaea", dionaea_access, [$unsolicited=T]);
     log_bro("dionaea_receiver.bro: bro_init() done");
 }
 
@@ -28,9 +29,21 @@ event bro_done() {
   log_bro("dionaea_receiver.bro: bro_done()");
 }
 
-event dionaea_connection(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, connector_id: string) {
-  log_bro("Dionaea event received!");
-  
+event dionaea_access(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string) {
+  log_bro("Dionaea access event received!");
+}
+
+event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string) {
+    log_bro("Dionaea mysql event received!");
+}
+
+event Broker::incoming_connection_established(peer_name: string) {
+    local msg: string = "Incoming_connection_established " + peer_name;
+    log_bro(msg);
+}
+event Broker::incoming_connection_broken(peer_name: string) {
+    local msg: string = "Incoming_connection_broken " + peer_name;
+    log_bro(msg);
 }
 
 event Broker::outgoing_connection_established(peer_address: string, peer_port: port, peer_name: string) {
