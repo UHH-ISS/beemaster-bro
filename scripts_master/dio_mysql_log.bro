@@ -1,5 +1,4 @@
-module Dio_incident;
-
+module Dio_mysql;
 export {
   redef enum Log::ID += { LOG };
   redef LogAscii::empty_field = "EMPTY";
@@ -12,10 +11,10 @@ export {
     remote_ip: addr &log; 
     remote_port: port &log;
     transport: string &log;
+    args: string &log;
     connector_id: string &log;
   };
 }
-
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_incident::LOG, [$columns=Info, $path="dionaea_incident"]); 
+  Log::create_stream(Dio_mysql::LOG, [$columns=Info, $path="dionaea_mysql"]); 
 }

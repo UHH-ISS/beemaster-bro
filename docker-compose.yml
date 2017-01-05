@@ -1,0 +1,47 @@
+version: '2'
+# This Composefile uses named volumes for simplicity. The actual data is saved to /var/lib/docker/volumes/$VOLUME/_data.
+# Build args are passed to the Dockerfile to determine the container's purpose.
+
+volumes:
+  master-logs:
+  slave-logs:
+  dionaea-logs: 
+
+services:
+  bro-master:
+    build: 
+      context: ./mp-ids-bro
+      args:
+        PURPOSE: master
+    command: ["/bro/scripts_master/"]
+    volumes:
+      - master-logs:/usr/local/bro/logs
+
+  bro-slave:
+    build: 
+      context: ./mp-ids-bro
+      args:
+        PURPOSE: slave
+    command: ["/bro/scripts_slave/"]
+    volumes:
+      - slave-logs:/usr/local/bro/logs
+    depends_on:
+      - bro-master
+
+  connector:
+    build: ./mp-ids-hp/connector
+    command: ["--saddr","bro-slave","--sport","9999"]
+    depends_on:
+      - bro-slave
+
+  dionaea:
+    build: ./mp-ids-hp/dionaea
+    depends_on:
+      - connector
+    volumes:
+      - dionaea-logs:/var/dionaea/logs
+    ports:
+      - 127.0.0.1:21:21
+      - 127.0.0.1:80:80
+      - 127.0.0.1:443:443
+      - 127.0.0.1:3306:3306
