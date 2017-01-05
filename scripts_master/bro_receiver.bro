@@ -11,9 +11,9 @@ global log_bro: function(msg: string);
 
 event bro_init() {
     log_bro("bro_receiver.bro: bro_init()");
-    Broker::enable();
+    Broker::enable([$auto_publish=T]);
     Broker::listen(broker_port, "0.0.0.0");
-    Broker::subscribe_to_events("bro/forwarder/dionaea/");
+    Broker::subscribe_to_events("bro/forwarder/");
     log_bro("bro_receiver.bro: bro_init() done");
 }
 event bro_done() {

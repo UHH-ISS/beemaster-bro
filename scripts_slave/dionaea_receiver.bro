@@ -4,15 +4,23 @@ redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "bro-slave";
 global dionaea_connection: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, connector_id: string);
 global log_bro: function(msg: string);
+global published_events: set[string] = { "dionaea_connection" };
 
 
 event bro_init() {
     log_bro("dionaea_receiver.bro: bro_init()");
-    Broker::enable();
+    Broker::enable([$auto_publish=T, $auto_routing=T]);
+    
+    # Listening
     Broker::listen(broker_port, "0.0.0.0");
     Broker::subscribe_to_events("honeypot/dionaea/");
+    
+    # Forwarding
     Broker::connect("bro-master", broker_port, 1sec);
-    Broker::auto_event("bro/forwarder/dionaea/", dionaea_connection, Broker::SendFlags(unsolicited=T));
+    Broker::register_broker_events("bro/forwarder/dionaea", published_events);
+
+    # Try unsolicited option, which should prevent topic issues
+    Broker::auto_event("bro/forwarder/dionaea", dionaea_connection, [$unsolicited=T]);
     log_bro("dionaea_receiver.bro: bro_init() done");
 }
 
