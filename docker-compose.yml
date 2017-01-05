@@ -40,3 +40,8 @@ services:
       - connector
     volumes:
       - dionaea-logs:/var/dionaea/logs
+    ports:
+      - 127.0.0.1:21:21
+      - 127.0.0.1:80:80
+      - 127.0.0.1:443:443
+      - 127.0.0.1:3306:3306
