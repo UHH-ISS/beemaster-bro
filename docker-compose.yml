@@ -4,7 +4,8 @@ version: '2'
 
 volumes:
   master-logs:
-  slave-logs:
+  slave-1-logs:
+  slave-2-logs:
   dionaea-logs: 
 
 services:
@@ -17,22 +18,33 @@ services:
     volumes:
       - master-logs:/usr/local/bro/logs
 
-  bro-slave:
+  bro-slave-1:
     build: 
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - slave-logs:/usr/local/bro/logs
+      - slave-1-logs:/usr/local/bro/logs
+    depends_on:
+      - bro-master
+
+  bro-slave-2:
+    build:
+      context: ./mp-ids-bro
+      args:
+        PURPOSE: slave
+    command: ["/bro/scripts_slave/"]
+    volumes:
+      - slave-2-logs:/usr/local/bro/logs
     depends_on:
       - bro-master
 
   connector:
     build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-slave","--sport","9999"]
+    command: ["--saddr","bro-master","--sport","9999"]
     depends_on:
-      - bro-slave
+      - bro-master
 
   dionaea:
     build: ./mp-ids-hp/dionaea

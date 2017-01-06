@@ -8,6 +8,7 @@ global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src
 global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string); 
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
+global known_slaves: set[string] = {};
 
 event bro_init() {
     log_bro("bro_receiver.bro: bro_init()");
@@ -40,12 +41,22 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
     Log::write(Dio_mysql::LOG, rec);
 }
 event Broker::incoming_connection_established(peer_name: string) {
-    local msg: string = "-> Broker::incoming_connection_established " + peer_name;
-    log_bro(msg);
+    local inc: string = "Incoming connection extablished " + peer_name;
+    log_bro(inc);
+    if(/bro-slave-/ in peer_name) {
+        local msg: string = "Registering new slave " + peer_name;
+        log_bro(msg);
+        add known_slaves[peer_name];
+    }
 }
 event Broker::incoming_connection_broken(peer_name: string) {
-    local msg: string = "-> Broker::incoming_connection_broken " + peer_name;
-    log_bro(msg);
+    local inc: string = "Incoming connection broken for " + peer_name;
+    log_bro(inc);
+    if(/bro-slave-/ in peer_name) {
+        local msg: string = "Unregistering old slave " + peer_name;
+        log_bro(msg);
+        delete known_slaves[peer_name];
+    }
 }
 function get_protocol(proto_str: string) : transport_proto {
     # https://www.bro.org/sphinx/scripts/base/init-bare.bro.html#type-transport_proto
