@@ -8,7 +8,7 @@ global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src
 global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string); 
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
-global slaves: opaque of Broker::Handle;
+global slaves: table[string] of count;
 global connectors: opaque of Broker::Handle;
 global add_to_balance: function(peer_name: string);
 global remove_from_balance: function(peer_name: string);
@@ -22,7 +22,6 @@ event bro_init() {
     Broker::subscribe_to_events("bro/forwarder");
 
     ## create a distributed datastore for the connector to link against:
-    slaves = Broker::create_master("slaves");
     connectors = Broker::create_master("connectors");
 
     log_bro("bro_receiver.bro: bro_init() done");
@@ -79,43 +78,49 @@ function log_bro(msg:string) {
 function add_to_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
         log_bro("Registering new slave " + peer_name);
-        Broker::insert(slaves, Broker::data(peer_name), Broker::data(0));
+        slaves[peer_name] = 0;
         # TODO balance clients to this new slave
     }
     if(/beemaster-connector-/ in peer_name) {
         log_bro("Registering new connector " + peer_name);
-        local min_connectors = 100000;
+        local min_count_conn = 100000;
         local best_slave = "";
-        when (local keys = Broker::keys(slaves)$result) {
-            for (slave in Broker::DataVector(keys)) {
-                when (local m = Broker::refine_to_count(Broker::lookup(slaves, Broker::data(slave))$result)) {
-                    if (m < min_connectors) {
-                        best_slave = Broker::refine_to_string(Broker::data(slave));
-                        min_connectors = m;
-                    }
-                }
-                timeout 1sec {
-                    log_bro("Query timeout registering connector " + peer_name);
-                }
-            }
+
+        local size = |slaves|;
+
+        print "size", size;
+        if (size <= 0) {
+            log_bro("No slaves are registered, cannot register connector " + peer_name);
+            print "should return";
+            return;
         }
-        timeout 1sec {
-            log_bro("Transit timeout registering connector " + peer_name);
+
+        for(slave in slaves) {
+            local count_conn = slaves[slave];
+            print "slave", slave, "count_conn", count_conn;
+            
+            if (count_conn < min_count_conn) {
+                best_slave = slave;
+                min_count_conn = count_conn;
+            }
         }
         if (best_slave != "") {
             Broker::insert(connectors, Broker::data(peer_name), Broker::data(best_slave));
+            print "Registered connector ", peer_name, " and balanced to ", best_slave;
             log_bro("Registered connector " + peer_name + " and balanced to " + best_slave);
         }
         else {
+            print "Could not register connector ", peer_name;
             log_bro("Could not register connector " + peer_name);
         }
+        
     }
 }
 
 function remove_from_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
         log_bro("Unregistering old slave " + peer_name);
-        Broker::erase(slaves, Broker::data(peer_name));
+        delete slaves[peer_name];
         # TODO rebalance
     }
     if(/beemaster-connector-/ in peer_name) {
