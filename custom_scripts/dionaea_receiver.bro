@@ -61,7 +61,7 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
     Log::write(Dio_mysql::LOG, rec);
 }
 
-event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, md5hash: string, file: string, origin: string, connector_id: string) {   
+event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, md5hash: string, file: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -73,7 +73,6 @@ event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, loc
 }
 
 event dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, origin: string, connector_id: string) {
-{
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -85,7 +84,6 @@ event dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_
 }
 
 event dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, opnum: count, uuid: string, origin: string, connector_id: string) {
-
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
