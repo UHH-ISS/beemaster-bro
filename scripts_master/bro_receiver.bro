@@ -8,7 +8,10 @@ global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src
 global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, args: string, connector_id: string); 
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
-global known_slaves: set[string] = {};
+global slaves: opaque of Broker::Handle;
+global connectors: opaque of Broker::Handle;
+global add_to_balance: function(peer_name: string);
+global remove_from_balance: function(peer_name: string);
 
 event bro_init() {
     log_bro("bro_receiver.bro: bro_init()");
@@ -17,6 +20,10 @@ event bro_init() {
     Broker::listen(broker_port, "0.0.0.0");
 
     Broker::subscribe_to_events("bro/forwarder");
+
+    ## create a distributed datastore for the connector to link against:
+    slaves = Broker::create_master("slaves");
+    connectors = Broker::create_master("connectors");
 
     log_bro("bro_receiver.bro: bro_init() done");
 }
@@ -43,20 +50,12 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
 event Broker::incoming_connection_established(peer_name: string) {
     local inc: string = "Incoming connection extablished " + peer_name;
     log_bro(inc);
-    if(/bro-slave-/ in peer_name) {
-        local msg: string = "Registering new slave " + peer_name;
-        log_bro(msg);
-        add known_slaves[peer_name];
-    }
+    add_to_balance(peer_name);
 }
 event Broker::incoming_connection_broken(peer_name: string) {
     local inc: string = "Incoming connection broken for " + peer_name;
     log_bro(inc);
-    if(/bro-slave-/ in peer_name) {
-        local msg: string = "Unregistering old slave " + peer_name;
-        log_bro(msg);
-        delete known_slaves[peer_name];
-    }
+    remove_from_balance(peer_name);
 }
 function get_protocol(proto_str: string) : transport_proto {
     # https://www.bro.org/sphinx/scripts/base/init-bare.bro.html#type-transport_proto
@@ -73,6 +72,55 @@ function get_protocol(proto_str: string) : transport_proto {
 }
 
 function log_bro(msg:string) {
-  local rec: Brolog::Info = [$msg=msg];
-  Log::write(Brolog::LOG, rec);
+    local rec: Brolog::Info = [$msg=msg];
+    Log::write(Brolog::LOG, rec);
+}
+
+function add_to_balance(peer_name: string) {
+    if(/bro-slave-/ in peer_name) {
+        log_bro("Registering new slave " + peer_name);
+        Broker::insert(slaves, Broker::data(peer_name), Broker::data(0));
+        # TODO balance clients to this new slave
+    }
+    if(/beemaster-connector-/ in peer_name) {
+        log_bro("Registering new connector " + peer_name);
+        local min_connectors = 100000;
+        local best_slave = "";
+        when (local keys = Broker::keys(slaves)$result) {
+            for (slave in Broker::DataVector(keys)) {
+                when (local m = Broker::refine_to_count(Broker::lookup(slaves, Broker::data(slave))$result)) {
+                    if (m < min_connectors) {
+                        best_slave = Broker::refine_to_string(Broker::data(slave));
+                        min_connectors = m;
+                    }
+                }
+                timeout 1sec {
+                    log_bro("Query timeout registering connector " + peer_name);
+                }
+            }
+        }
+        timeout 1sec {
+            log_bro("Transit timeout registering connector " + peer_name);
+        }
+        if (best_slave != "") {
+            Broker::insert(connectors, Broker::data(peer_name), Broker::data(best_slave));
+            log_bro("Registered connector " + peer_name + " and balanced to " + best_slave);
+        }
+        else {
+            log_bro("Could not register connector " + peer_name);
+        }
+    }
+}
+
+function remove_from_balance(peer_name: string) {
+    if(/bro-slave-/ in peer_name) {
+        log_bro("Unregistering old slave " + peer_name);
+        Broker::erase(slaves, Broker::data(peer_name));
+        # TODO rebalance
+    }
+    if(/beemaster-connector-/ in peer_name) {
+        log_bro("Unregistering old connector " + peer_name);
+        Broker::erase(connectors, Broker::data(peer_name));
+        # TODO decrement slaves for the connector
+    }
 }
