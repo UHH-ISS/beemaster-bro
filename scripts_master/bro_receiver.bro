@@ -79,7 +79,41 @@ function add_to_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
         log_bro("Registering new slave " + peer_name);
         slaves[peer_name] = 0;
-        # TODO realance clients to this new slave
+        local total_slaves = |slaves|;
+        local total_connectors = 0;
+        local slave_table = vector of string;
+        local i = 0;
+        for (slave in slaves) {
+            total_connectors += slaves[slave];
+            slave_table[i] = slave;
+            ++i;
+        }
+        i = 0;
+        when (local keys = Broker::keys(connectors)) {
+            local connector_table = vector of string;
+            while (i < total_connectors) {
+                connector_table[i] = Broker::vector_lookup(keys$result, i);
+            }
+
+            print "Starting add slave to balance:";
+            print "total_slaves", total_slaves, "total_connectors", total_connectors;
+            while (total_slaves > 0) {
+                local balance_amount = balance_amount = total_connectors; 
+                if (total_connectors % total_slaves > 0) {
+                    balance_amount = total_connectors / total_slaves + 1;
+                }
+                --total_slaves;
+                total_connectors -= balance_amount;
+                print "total_slaves", total_slaves, "total_connectors", total_connectors;
+                # TODO: set balanceamount as value for one slave
+                # TODO: set for all those connectors that one slave
+            }
+
+        }
+        timeout 100msec {
+            print "aww";   
+        }
+        
     }
     if(/beemaster-connector-/ in peer_name) {
         log_bro("Registering new connector " + peer_name);
@@ -93,10 +127,8 @@ function add_to_balance(peer_name: string) {
             print "should return";
             return;
         }
-
         for(slave in slaves) {
             local count_conn = slaves[slave];
-            
             if (count_conn < min_count_conn) {
                 best_slave = slave;
                 min_count_conn = count_conn;
