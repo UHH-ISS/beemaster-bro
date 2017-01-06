@@ -61,7 +61,7 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
     Log::write(Dio_mysql::LOG, rec);
 }
 
-global dionaea_download_complete: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, md5hash: string, file: string, origin: string, connector_id: string) {   
+event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, md5hash: string, file: string, origin: string, connector_id: string) {   
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -72,7 +72,7 @@ global dionaea_download_complete: event(timestamp: time, id: string, local_ip: a
     Log::write(Dio_download_complete::LOG, rec);
 }
 
-global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, origin: string, connector_id: string) {
+event dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, url: string, origin: string, connector_id: string) {
 {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
@@ -84,7 +84,7 @@ global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr
     Log::write(Dio_download_offer::LOG, rec);
 }
 
-global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, opnum: count, uuid: string, origin: string, connector_id: string) {
+event dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, opnum: count, uuid: string, origin: string, connector_id: string) {
 
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
@@ -96,7 +96,7 @@ global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, l
     Log::write(Dio_smb_request::LOG, rec);
 }
 
-global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, transfersyntax: string, uuid: string, origin: string, connector_id: string) {
+event dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, transfersyntax: string, uuid: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
