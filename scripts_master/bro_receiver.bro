@@ -79,7 +79,7 @@ function add_to_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
         log_bro("Registering new slave " + peer_name);
         slaves[peer_name] = 0;
-        # TODO balance clients to this new slave
+        # TODO realance clients to this new slave
     }
     if(/beemaster-connector-/ in peer_name) {
         log_bro("Registering new connector " + peer_name);
@@ -88,7 +88,6 @@ function add_to_balance(peer_name: string) {
 
         local size = |slaves|;
 
-        print "size", size;
         if (size <= 0) {
             log_bro("No slaves are registered, cannot register connector " + peer_name);
             print "should return";
@@ -97,7 +96,6 @@ function add_to_balance(peer_name: string) {
 
         for(slave in slaves) {
             local count_conn = slaves[slave];
-            print "slave", slave, "count_conn", count_conn;
             
             if (count_conn < min_count_conn) {
                 best_slave = slave;
@@ -106,7 +104,8 @@ function add_to_balance(peer_name: string) {
         }
         if (best_slave != "") {
             Broker::insert(connectors, Broker::data(peer_name), Broker::data(best_slave));
-            print "Registered connector ", peer_name, " and balanced to ", best_slave;
+            ++slaves[best_slave];
+            print "Registered connector", peer_name, "and balanced to", best_slave;
             log_bro("Registered connector " + peer_name + " and balanced to " + best_slave);
         }
         else {
@@ -124,8 +123,19 @@ function remove_from_balance(peer_name: string) {
         # TODO rebalance
     }
     if(/beemaster-connector-/ in peer_name) {
-        log_bro("Unregistering old connector " + peer_name);
-        Broker::erase(connectors, Broker::data(peer_name));
-        # TODO decrement slaves for the connector
+        when(local cs = Broker::lookup(connectors, Broker::data(peer_name))) {
+            local connected_slave = Broker::refine_to_string(cs$result);
+            local count_conn = slaves[connected_slave];
+            if (count_conn > 0) {
+                slaves[connected_slave] = count_conn - 1;
+            }
+            Broker::erase(connectors, Broker::data(peer_name));
+            print "Unregistered old connector", peer_name, "leaving slave table", slaves;
+            log_bro("Unregistered old connector " + peer_name);
+        }
+        timeout 100msec {
+            print "Timeout unregistering connector", peer_name;
+            log_bro("Timeout unregistering connector " + peer_name);
+        }
     }
 }
