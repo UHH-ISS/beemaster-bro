@@ -6,6 +6,7 @@ volumes:
   master-logs:
   slave-1-logs:
   slave-2-logs:
+  slave-3-logs:
   dionaea-logs: 
 
 services:
@@ -40,16 +41,53 @@ services:
     depends_on:
       - bro-master
 
-  connector:
+  bro-slave-3:
+    build:
+      context: ./mp-ids-bro
+      args:
+        PURPOSE: slave
+    command: ["/bro/scripts_slave/"]
+    volumes:
+      - slave-3-logs:/usr/local/bro/logs
+    depends_on:
+      - bro-master
+
+  connector-1:
     build: ./mp-ids-hp/connector
     command: ["--saddr","bro-master","--sport","9999", "--endpoint","beemaster-connector-1"]
     depends_on:
       - bro-master
 
+  connector-2:
+    build: ./mp-ids-hp/connector
+    command: ["--saddr","bro-master","--sport","9999", "--endpoint","beemaster-connector-2"]
+    depends_on:
+      - bro-master
+
+  connector-3:
+    build: ./mp-ids-hp/connector
+    command: ["--saddr","bro-master","--sport","9999", "--endpoint","beemaster-connector-3"]
+    depends_on:
+      - bro-master
+
+  connector-4:
+    build: ./mp-ids-hp/connector
+    command: ["--saddr","bro-master","--sport","9999", "--endpoint","beemaster-connector-4"]
+    depends_on:
+      - bro-master
+
+  connector-5:
+    build: ./mp-ids-hp/connector
+    command: ["--saddr","bro-master","--sport","9999", "--endpoint","beemaster-connector-5"]
+    depends_on:
+      - bro-master
+
   dionaea:
     build: ./mp-ids-hp/dionaea
+    links:
+      - connector-1:connector
     depends_on:
-      - connector
+      - connector-1
     volumes:
       - dionaea-logs:/var/dionaea/logs
     ports:
