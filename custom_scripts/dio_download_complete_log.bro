@@ -15,7 +15,7 @@ export {
     protocol: string &log;
     url: string &log;
     md5hash: string &log;
-    file: string &log;
+    filelocation: string &log;
     origin: string &log;
     connector_id: string &log;
   };
