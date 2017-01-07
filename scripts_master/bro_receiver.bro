@@ -12,6 +12,7 @@ global slaves: table[string] of count;
 global connectors: opaque of Broker::Handle;
 global add_to_balance: function(peer_name: string);
 global remove_from_balance: function(peer_name: string);
+global rebalance_all: function();
 
 event bro_init() {
     log_bro("bro_receiver.bro: bro_init()");
@@ -45,10 +46,12 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
     Log::write(Dio_mysql::LOG, rec);
 }
 event Broker::incoming_connection_established(peer_name: string) {
+    print "Incoming connection extablished " + peer_name;
     log_bro("Incoming connection extablished " + peer_name);
     add_to_balance(peer_name);
 }
 event Broker::incoming_connection_broken(peer_name: string) {
+    print "Incoming connection broken for " + peer_name;
     log_bro("Incoming connection broken for " + peer_name);
     remove_from_balance(peer_name);
 }
@@ -73,51 +76,14 @@ function log_bro(msg:string) {
 
 function add_to_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
-        print "Registering new slave ", peer_name;
-        log_bro("Registering new slave " + peer_name);
         slaves[peer_name] = 0;
-        local total_slaves = |slaves|;
-        local slave_vector = vector();
-        local i = 0;
-        for (slave in slaves) {
-            slave_vector[i] = slave;
-            ++i;
-        }
-        i = 0;
-        when (local keys = Broker::keys(connectors)) {
-            local connector_vector = vector();
-            local total_connectors = Broker::vector_size(keys$result);
-            while (i < total_connectors) {
-                connector_vector[i] = Broker::vector_lookup(keys$result, i);
-                ++i;
-            }
 
-            while (total_slaves > 0 && total_connectors > 0) {
-                local balance_amount = total_connectors / total_slaves;
-                if (total_connectors % total_slaves > 0) {
-                    balance_amount = total_connectors / total_slaves + 1;
-                }
-                --total_slaves;
-                local balanced_to = slave_vector[total_slaves];
-                slaves[balanced_to] = balance_amount;
-                local balance_index = total_connectors - balance_amount; # do this once, do this here!
-                while (total_connectors > balance_index) {
-                    --total_connectors;
-                    local rebalanced_conn = Broker::refine_to_string(connector_vector[total_connectors]);
-                    Broker::insert(connectors, Broker::data(rebalanced_conn), Broker::data(balanced_to));
-                    print "Rebalanced connector", rebalanced_conn, "to slave", balanced_to;
-                    #log_bro("Rebalanced connector " + rebalanced_conn + " to slave " + balanced_to);
-                }
-            }
-        }
-        timeout 100msec {
-            log_bro("ERROR: Unable to query keys in 'connectors-data-store' within 100ms, timeout");
-        }
+        print "Registered new slave ", peer_name;
+        log_bro("Registered new slave " + peer_name);
         
+        rebalance_all();
     }
     if(/beemaster-connector-/ in peer_name) {
-        print "Registering new connector ", peer_name;
-        log_bro("Registering new connector " + peer_name);
         local min_count_conn = 100000;
         local best_slave = "";
 
@@ -145,9 +111,12 @@ function add_to_balance(peer_name: string) {
 
 function remove_from_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
-        log_bro("Unregistering old slave " + peer_name);
         delete slaves[peer_name];
-        # TODO rebalance
+
+        print "Unregistered old slave ", peer_name;
+        log_bro("Unregistered old slave " + peer_name + " ...");
+
+        rebalance_all();
     }
     if(/beemaster-connector-/ in peer_name) {
         when(local cs = Broker::lookup(connectors, Broker::data(peer_name))) {
@@ -170,5 +139,57 @@ function remove_from_balance(peer_name: string) {
             print "Timeout unregistering connector", peer_name;
             log_bro("Timeout unregistering connector " + peer_name);
         }
+    }
+}
+
+function rebalance_all() {
+    local total_slaves = |slaves|;
+    local slave_vector: vector of string;
+    slave_vector = vector();
+    local i = 0;
+    for (slave in slaves) {
+        slave_vector[i] = slave;
+        ++i;
+    }
+    i = 0;
+    when (local keys = Broker::keys(connectors)) {
+        local connector_vector: vector of string;
+        connector_vector = vector();
+        local total_connectors = Broker::vector_size(keys$result);
+        while (i < total_connectors) {
+            connector_vector[i] = Broker::refine_to_string(Broker::vector_lookup(keys$result, i));
+            ++i;
+        }
+        if (total_slaves == 0) {
+            print "No registered slaves found, invalidating all connectors";
+            log_bro("No registered slaves found, invalidating all connectors");
+            local j = 0;
+            while (j < i) {
+                local connector = connector_vector[j];
+                Broker::insert(connectors, Broker::data(connector), Broker::data(""));
+                ++j;
+            }
+            return; # break out.
+        }
+        while (total_slaves > 0 && total_connectors > 0) {
+            local balance_amount = total_connectors / total_slaves;
+            if (total_connectors % total_slaves > 0) {
+                balance_amount = total_connectors / total_slaves + 1;
+            }
+            --total_slaves;
+            local balanced_to = slave_vector[total_slaves];
+            slaves[balanced_to] = balance_amount;
+            local balance_index = total_connectors - balance_amount; # do this once, do this here!
+            while (total_connectors > balance_index) {
+                --total_connectors;
+                local rebalanced_conn = connector_vector[total_connectors];
+                Broker::insert(connectors, Broker::data(rebalanced_conn), Broker::data(balanced_to));
+                print "Rebalanced connector", rebalanced_conn, "to slave", balanced_to;
+                log_bro("Rebalanced connector " + rebalanced_conn + "to slave" + balanced_to);
+            }
+        }
+    }
+    timeout 100msec {
+        log_bro("ERROR: Unable to query keys in 'connectors-data-store' within 100ms, timeout");
     }
 }
