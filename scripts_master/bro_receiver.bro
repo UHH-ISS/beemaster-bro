@@ -46,8 +46,8 @@ event dionaea_mysql(timestamp: time, id: string, local_ip: addr, local_port: cou
     Log::write(Dio_mysql::LOG, rec);
 }
 event Broker::incoming_connection_established(peer_name: string) {
-    print "Incoming connection extablished " + peer_name;
-    log_bro("Incoming connection extablished " + peer_name);
+    print "Incoming connection established " + peer_name;
+    log_bro("Incoming connection established " + peer_name);
     add_to_balance(peer_name);
 }
 event Broker::incoming_connection_broken(peer_name: string) {
@@ -102,8 +102,8 @@ function add_to_balance(peer_name: string) {
             log_bro("Registered connector " + peer_name + " and balanced to " + best_slave);
         }
         else {
-            print "Could not register connector", peer_name;
-            log_bro("Could not register connector " + peer_name);
+            print "Could not balance connector", peer_name, "because no slaves are ready";
+            log_bro("Could not balance connector " + peer_name + " because no slaves are ready");
         }
         
     }
@@ -185,7 +185,7 @@ function rebalance_all() {
                 local rebalanced_conn = connector_vector[total_connectors];
                 Broker::insert(connectors, Broker::data(rebalanced_conn), Broker::data(balanced_to));
                 print "Rebalanced connector", rebalanced_conn, "to slave", balanced_to;
-                log_bro("Rebalanced connector " + rebalanced_conn + "to slave" + balanced_to);
+                log_bro("Rebalanced connector " + rebalanced_conn + " to slave " + balanced_to);
             }
         }
     }
