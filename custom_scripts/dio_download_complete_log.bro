@@ -13,7 +13,7 @@ export {
     transport: string &log;
     url: string &log;
     md5hash: string &log;
-    file: string &log;
+    binary: string &log;
     origin: string &log;
     connector_id: string &log;
   };
