@@ -2,6 +2,7 @@ module Dio_smb_bind;
 
 export {
   redef enum Log::ID += { LOG };
+  redef LogAscii::empty_field = "EMPTY";
   
   type Info: record {
     ts: time &log;
@@ -11,6 +12,7 @@ export {
     remote_ip: addr &log; 
     remote_port: port &log;
     transport: string &log;
+    protocol: string &log;
     transfersyntax: string &log;
     uuid: string &log;
     origin: string &log;

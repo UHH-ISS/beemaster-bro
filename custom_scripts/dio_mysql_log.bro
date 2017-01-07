@@ -2,6 +2,7 @@ module Dio_mysql;
 
 export {
   redef enum Log::ID += { LOG };
+  redef LogAscii::empty_field = "EMPTY";
   
   type Info: record {
     ts: time &log;
@@ -11,6 +12,7 @@ export {
     remote_ip: addr &log; 
     remote_port: port &log;
     transport: string &log;
+    protocol: string &log;
     args: string &log;
     connector_id: string &log;
   };
