@@ -21,6 +21,7 @@ event bro_init() {
     Broker::listen(broker_port, "0.0.0.0");
 
     Broker::subscribe_to_events("bro/forwarder");
+    Broker::subscribe_to_events("honeypot/dionaea");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
