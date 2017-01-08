@@ -82,7 +82,7 @@ services:
     depends_on:
       - bro-master
 
-  dionaea:
+  dionaea-1:
     build: ./mp-ids-hp/dionaea
     links:
       - connector-1:connector
@@ -91,7 +91,48 @@ services:
     volumes:
       - dionaea-logs:/var/dionaea/logs
     ports:
-      - 127.0.0.1:21:21
-      - 127.0.0.1:80:80
-      - 127.0.0.1:443:443
-      - 127.0.0.1:3306:3306
+      - 127.0.0.1:81:80
+
+  dionaea-2:
+    build: ./mp-ids-hp/dionaea
+    links:
+      - connector-2:connector
+    depends_on:
+      - connector-2
+    volumes:
+      - dionaea-logs:/var/dionaea/logs
+    ports:
+      - 127.0.0.1:82:80
+
+  dionaea-3:
+    build: ./mp-ids-hp/dionaea
+    links:
+      - connector-3:connector
+    depends_on:
+      - connector-3
+    volumes:
+      - dionaea-logs:/var/dionaea/logs
+    ports:
+      - 127.0.0.1:83:80
+
+  dionaea-4:
+    build: ./mp-ids-hp/dionaea
+    links:
+      - connector-4:connector
+    depends_on:
+      - connector-4
+    volumes:
+      - dionaea-logs:/var/dionaea/logs
+    ports:
+      - 127.0.0.1:84:80
+
+  dionaea-5:
+    build: ./mp-ids-hp/dionaea
+    links:
+      - connector-5:connector
+    depends_on:
+      - connector-5
+    volumes:
+      - dionaea-logs:/var/dionaea/logs
+    ports:
+      - 127.0.0.1:85:80
