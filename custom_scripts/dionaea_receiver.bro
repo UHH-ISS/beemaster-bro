@@ -9,7 +9,7 @@ const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "listener";
 global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
-global dionaea_ftp: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, commands: Dio_ftp::VectorCommands, connector_id: string);
+global dionaea_ftp: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string);
 global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, connector_id: string); 
 global dionaea_download_complete: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string);
 global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string);
@@ -39,14 +39,12 @@ event dionaea_access(timestamp: time, dst_ip: addr, dst_port: count, src_hostnam
     Log::write(Dio_access::LOG, rec);
 }
 
-event dionaea_ftp(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, commands: Dio_ftp::VectorCommands, connector_id: string) {
-    local sport: port = count_to_port(src_port, get_protocol(transport));
-    local dport: port = count_to_port(dst_port, get_protocol(transport));
+event dionaea_ftp(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string) {
+    local lport: port = count_to_port(local_port, get_protocol(transport));
+    local rport: port = count_to_port(remote_port, get_protocol(transport));
 
-    local rec_acc: Dio_access::Info = [$ts=timestamp, $dst_ip=dst_ip, $dst_port=dport, $src_hostname=src_hostname, $src_ip=src_ip, $src_port=sport, $transport=transport, $protocol=protocol, $connector_id=connector_id];
-    Log::write(Dio_access::LOG, rec_acc);
+    local rec: Dio_ftp::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $command=command, $arguments=arguments, $origin=origin, $connector_id=connector_id];
 
-    local rec: Dio_ftp::Info = [$ts=timestamp, $dst_ip=dst_ip, $dst_port=dport, $src_hostname=src_hostname, $src_ip=src_ip, $src_port=sport, $transport=transport, $protocol=protocol, $commands=commands, $connector_id=connector_id];
     Log::write(Dio_ftp::LOG, rec);
 }
 

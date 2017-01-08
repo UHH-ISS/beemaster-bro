@@ -4,23 +4,18 @@ export {
   redef enum Log::ID += { LOG };
   redef LogAscii::empty_field = "EMPTY";
   
-  type Commands: record {
-    command: string &log;
-    arguments: string &log;
-  };
-  
-  type VectorCommands: vector of Commands;
-  
   type Info: record {
     ts: time &log;
-    dst_ip: addr &log;
-    dst_port: port &log;
-    src_hostname: string &log;
-    src_ip: addr &log;
-    src_port: port &log; 
+    id: string &log;
+    local_ip: addr &log;
+    local_port: port &log;
+    remote_ip: addr &log; 
+    remote_port: port &log;
     transport: string &log;
     protocol: string &log;
-    commands: Dio_ftp::VectorCommands;
+    command: string &log;
+    arguments: string &log;
+    origin: string &log;
     connector_id: string &log;
   };
 }
