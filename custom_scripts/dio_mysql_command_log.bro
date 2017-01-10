@@ -1,4 +1,4 @@
-module Dio_mysql;
+module Dio_mysql_command;
 
 export {
   redef enum Log::ID += { LOG };
@@ -14,10 +14,11 @@ export {
     transport: string &log;
     protocol: string &log;
     args: string &log;
+    origin: string &log;
     connector_id: string &log;
   };
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql::LOG, [$columns=Info, $path="Dionaea_MySQL"]); 
+  Log::create_stream(Dio_mysql_command::LOG, [$columns=Info, $path="Dionaea_MySQLCommand"]); 
 }
