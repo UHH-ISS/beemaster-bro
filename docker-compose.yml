@@ -3,11 +3,7 @@ version: '2'
 # Build args are passed to the Dockerfile to determine the container's purpose.
 
 volumes:
-  master-logs:
-  slave-1-logs:
-  slave-2-logs:
-  slave-3-logs:
-  dionaea-logs: 
+  dionaea-logs:
 
 services:
   bro-master:
@@ -17,7 +13,7 @@ services:
         PURPOSE: master
     command: ["/bro/scripts_master/"]
     volumes:
-      - /var/beemaster/log/master-logs:/usr/local/bro/logs
+      - /var/beemaster/log/bro-master:/usr/local/bro/logs
 
   bro-slave-1:
     build: 
@@ -26,7 +22,7 @@ services:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - /var/beemaster/log/slave-1-logs:/usr/local/bro/logs
+      - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
     depends_on:
       - bro-master
 
@@ -37,7 +33,7 @@ services:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - /var/beemaster/log/slave-2-logs:/usr/local/bro/logs
+      - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
     depends_on:
       - bro-master
 
@@ -48,7 +44,7 @@ services:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - /var/beemaster/log/slave-3-logs:/usr/local/bro/logs
+      - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
     depends_on:
       - bro-master
 
