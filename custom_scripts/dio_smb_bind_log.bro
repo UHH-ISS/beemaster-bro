@@ -21,5 +21,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_smb_bind::LOG, [$columns=Info, $path="Dionaea_SMBBind"]); 
+  Log::create_stream(Dio_smb_bind::LOG, [$columns=Info, $path="dionaea_smb_bind"]);
 }

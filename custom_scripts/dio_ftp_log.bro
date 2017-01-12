@@ -21,5 +21,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_ftp::LOG, [$columns=Info, $path="Dionaea_FTP"]); 
+  Log::create_stream(Dio_ftp::LOG, [$columns=Info, $path="dionaea_ftp"]);
 }

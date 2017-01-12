@@ -20,5 +20,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_download_offer::LOG, [$columns=Info, $path="Dionaea_DownloadOffer"]); 
+  Log::create_stream(Dio_download_offer::LOG, [$columns=Info, $path="dionaea_download_offer"]);
 }

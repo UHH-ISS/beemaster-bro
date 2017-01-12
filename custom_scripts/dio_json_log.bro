@@ -18,5 +18,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_access::LOG, [$columns=Info, $path="dionaea_access"]); 
+  Log::create_stream(Dio_access::LOG, [$columns=Info, $path="dionaea_access"]);
 }

@@ -22,5 +22,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_download_complete::LOG, [$columns=Info, $path="Dionaea_DownloadComplete"]); 
+  Log::create_stream(Dio_download_complete::LOG, [$columns=Info, $path="dionaea_download_complete"]);
 }
