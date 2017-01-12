@@ -65,13 +65,13 @@ services:
       - beemaster-demo
     build: ./mp-ids-hp/dionaea
     links:
-      - connector-1:connector
+      - connector-0:connector
     depends_on:
-      - connector-1
+      - connector-0
     volumes:
       - dionaea-logs-0:/var/dionaea/logs
     ports:
-      - 21:21
+      - "21:21"
       - 80:80
       - 137-139:137-139
       - 443:443
@@ -89,7 +89,7 @@ services:
     volumes:
       - dionaea-logs-1:/var/dionaea/logs
     ports:
-      - 2121:21
+      - "2121:21"
       - 8081:80
       - 8137-8139:137-139
       - 4431:443
@@ -107,7 +107,7 @@ services:
     volumes:
       - dionaea-logs-2:/var/dionaea/logs
     ports:
-      - 2122:21
+      - "2122:21"
       - 8082:80
       - 9137-9139:137-139
       - 4432:443
@@ -125,7 +125,7 @@ services:
     volumes:
       - dionaea-logs-3:/var/dionaea/logs
     ports:
-      - 2123:21
+      - "2123:21"
       - 8083:80
       - 10137-10139:137-139
       - 4433:443
@@ -143,7 +143,7 @@ services:
     volumes:
       - dionaea-logs-4:/var/dionaea/logs
     ports:
-      - 2124:21
+      - "2124:21"
       - 8084:80
       - 11137-11139:137-139
       - 4434:443
@@ -161,7 +161,7 @@ services:
     volumes:
       - dionaea-logs-5:/var/dionaea/logs
     ports:
-      - 2125:21
+      - "2125:21"
       - 8085:80
       - 12137-12139:137-139
       - 4435:443
@@ -170,3 +170,4 @@ services:
 
 networks:
   beemaster-demo:
+    driver: overlay
