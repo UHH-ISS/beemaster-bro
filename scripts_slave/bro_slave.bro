@@ -14,7 +14,7 @@ global published_events: set[string] = { "dionaea_access", "dionaea_mysql" };
 
 
 event bro_init() {
-    log_bro("dionaea_receiver.bro: bro_init()");
+    log_bro("bro_slave.bro: bro_init()");
     Broker::enable([$auto_publish=T, $auto_routing=T]);
     
     # Listening
@@ -28,11 +28,11 @@ event bro_init() {
     # Try unsolicited option, which should prevent topic issues
     Broker::auto_event("bro/forwarder/dionaea", dionaea_access, [$unsolicited=T]);
     Broker::auto_event("bro/forwarder/dionaea", dionaea_mysql, [$unsolicited=T]);
-    log_bro("dionaea_receiver.bro: bro_init() done");
+    log_bro("bro_slave.bro: bro_init() done");
 }
 
 event bro_done() {
-  log_bro("dionaea_receiver.bro: bro_done()");
+  log_bro("bro_slave.bro: bro_done()");
 }
 
 event dionaea_access(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string) {

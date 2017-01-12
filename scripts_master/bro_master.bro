@@ -1,9 +1,6 @@
-@load ./dio_log.bro
-@load ./bro_log.bro
-@load ./dio_mysql_log.bro
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
-redef Broker::endpoint_name = "bro_receiver";
+redef Broker::endpoint_name = "bro_master";
 global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
 global dionaea_ftp: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string);
 global dionaea_mysql: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, connector_id: string);
@@ -20,7 +17,7 @@ global remove_from_balance: function(peer_name: string);
 global rebalance_all: function();
 
 event bro_init() {
-    log_bro("bro_receiver.bro: bro_init()");
+    log_bro("bro_master.bro: bro_init()");
     Broker::enable([$auto_publish=T]);
 
     Broker::listen(broker_port, "0.0.0.0");
@@ -31,10 +28,10 @@ event bro_init() {
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
 
-    log_bro("bro_receiver.bro: bro_init() done");
+    log_bro("bro_master.bro: bro_init() done");
 }
 event bro_done() {
-    log_bro("bro_receiver.bro: bro_done()");
+    log_bro("bro_master.bro: bro_done()");
 }
 
 event dionaea_access(timestamp: time, local_ip: addr, local_port: count, remote_hostname: string, remote_ip: addr, remote_port: count, transport: string, protocol: string, connector_id: string) {
