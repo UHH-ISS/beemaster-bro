@@ -1,3 +1,12 @@
+@load ./master_log.bro
+@load ./dio_access.bro
+@load ./dio_download_complete.bro
+@load ./dio_download_offer.bro
+@load ./dio_ftp.bro
+@load ./dio_mysql.bro
+@load ./dio_smb_bind.bro
+@load ./dio_smb_request.bro
+
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "bro_master";
@@ -24,6 +33,7 @@ event bro_init() {
 
     Broker::subscribe_to_events("bro/forwarder");
     Broker::subscribe_to_events("honeypot/dionaea");
+    Broker::subscribe_to_events_multi("honeypot/dionaea");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");

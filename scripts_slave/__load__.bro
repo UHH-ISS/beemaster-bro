@@ -1,2 +1,2 @@
-@load ./dionaea_receiver.bro
-@load ./bro_log.bro
+@load ./bro_slave.bro
+@load ./slave_log.bro

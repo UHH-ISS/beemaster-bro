@@ -1,4 +1,5 @@
-@load ./bro_log.bro
+@load ./slave_log.bro
+
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
 redef Broker::endpoint_name = "bro-slave-" + gethostname(); # make sure this is unique (for docker-compose, it is!)
