@@ -1,4 +1,9 @@
-@load ./bro_receiver.bro
-@load ./dio_log.bro
 @load ./bro_log.bro
+@load ./bro_receiver.bro
+@load ./dio_download_complete_log.bro
+@load ./dio_download_offer_log.bro
+@load ./dio_ftp_log.bro
+@load ./dio_log.bro
 @load ./dio_mysql_log.bro
+@load ./dio_smb_bind_log.bro
+@load ./dio_smb_request_log.bro
