@@ -1,4 +1,5 @@
-module Dio_mysql;
+module Dio_smb_request;
+
 export {
   redef enum Log::ID += { LOG };
   redef LogAscii::empty_field = "EMPTY";
@@ -12,10 +13,13 @@ export {
     remote_port: port &log;
     transport: string &log;
     protocol: string &log;
-    args: string &log;
+    opnum: count &log;
+    uuid: string &log;
+    origin: string &log;
     connector_id: string &log;
   };
 }
+
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql::LOG, [$columns=Info, $path="dionaea_mysql"]);
+  Log::create_stream(Dio_smb_request::LOG, [$columns=Info, $path="dionaea_smb_request"]);
 }

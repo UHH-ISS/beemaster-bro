@@ -1,4 +1,5 @@
-module Dio_mysql;
+module Dio_download_complete;
+
 export {
   redef enum Log::ID += { LOG };
   redef LogAscii::empty_field = "EMPTY";
@@ -12,10 +13,14 @@ export {
     remote_port: port &log;
     transport: string &log;
     protocol: string &log;
-    args: string &log;
+    url: string &log;
+    md5hash: string &log;
+    filelocation: string &log;
+    origin: string &log;
     connector_id: string &log;
   };
 }
+
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql::LOG, [$columns=Info, $path="dionaea_mysql"]);
+  Log::create_stream(Dio_download_complete::LOG, [$columns=Info, $path="dionaea_download_complete"]);
 }
