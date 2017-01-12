@@ -33,7 +33,7 @@ services:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
+      - /var/beemaster/log/bro-slave-2:/usr/local/bro/logs
     depends_on:
       - bro-master
 
@@ -44,7 +44,7 @@ services:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
+      - /var/beemaster/log/bro-slave-3:/usr/local/bro/logs
     depends_on:
       - bro-master
 
