@@ -2,44 +2,43 @@ version: '2'
 # This Composefile uses named volumes for simplicity. The actual data is saved to /var/lib/docker/volumes/$VOLUME/_data.
 # Build args are passed to the Dockerfile to determine the container's purpose.
 
-volumes:
-  master-logs:
-  slave-1-logs:
-  slave-2-logs:
-  slave-3-logs:
-
 services:
   bro-master:
+    networks:
+      - beemaster-demo
     build: 
       context: ./mp-ids-bro
       args:
         PURPOSE: master
     command: ["/bro/scripts_master/"]
     volumes:
-      - master-logs:/usr/local/bro/logs
+      - /var/beemaster/log/master-logs:/usr/local/bro/logs
 
   bro-slave-1:
+    networks:
+      - beemaster-demo
     build: 
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - slave-1-logs:/usr/local/bro/logs
+      - /var/beemaster/log/slave-1-logs:/usr/local/bro/logs
     depends_on:
       - bro-master
 
   bro-slave-2:
+    networks:
+      - beemaster-demo
     build:
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
     command: ["/bro/scripts_slave/"]
     volumes:
-      - slave-2-logs:/usr/local/bro/logs
+      - /var/beemaster/log/slave-2-logs:/usr/local/bro/logs
     depends_on:
       - bro-master
 
 networks:
   beemaster-demo:
-    driver: overlay
