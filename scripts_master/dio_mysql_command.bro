@@ -20,5 +20,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql_command::LOG, [$columns=Info, $path="dionaea_mysql_command"]); 
+  Log::create_stream(Dio_mysql_command::LOG, [$columns=Info, $path="dionaea_mysql_command"]);
 }
