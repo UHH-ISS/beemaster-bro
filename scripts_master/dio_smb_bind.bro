@@ -1,4 +1,4 @@
-module Dio_mysql_command;
+module Dio_smb_bind;
 
 export {
   redef enum Log::ID += { LOG };
@@ -13,12 +13,13 @@ export {
     remote_port: port &log;
     transport: string &log;
     protocol: string &log;
-    args: string &log;
+    transfersyntax: string &log;
+    uuid: string &log;
     origin: string &log;
     connector_id: string &log;
   };
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql_command::LOG, [$columns=Info, $path="Dionaea_MySQLCommand"]); 
+  Log::create_stream(Dio_smb_bind::LOG, [$columns=Info, $path="dionaea_smb_bind"]);
 }

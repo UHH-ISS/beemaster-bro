@@ -21,5 +21,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql_login::LOG, [$columns=Info, $path="Dionaea_MySQLLogin"]); 
+  Log::create_stream(Dio_mysql_login::LOG, [$columns=Info, $path="dionaea_mysql_login"]); 
 }

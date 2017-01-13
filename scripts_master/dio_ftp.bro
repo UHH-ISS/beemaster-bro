@@ -1,4 +1,4 @@
-module Dio_smb_bind;
+module Dio_ftp;
 
 export {
   redef enum Log::ID += { LOG };
@@ -13,13 +13,13 @@ export {
     remote_port: port &log;
     transport: string &log;
     protocol: string &log;
-    transfersyntax: string &log;
-    uuid: string &log;
+    command: string &log;
+    arguments: string &log;
     origin: string &log;
     connector_id: string &log;
   };
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_smb_bind::LOG, [$columns=Info, $path="Dionaea_SMBBind"]); 
+  Log::create_stream(Dio_ftp::LOG, [$columns=Info, $path="dionaea_ftp"]);
 }
