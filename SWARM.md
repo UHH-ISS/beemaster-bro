@@ -58,12 +58,8 @@ We go with the encrypted variant.
 docker network create --opt encrypted --driver overlay beemaster-demo
 ```
 
-Now one can use the `compose-beemaster-server.yaml` and `compose-honeypot-server.yaml` files of this repo for starting several honeypots, connectors, bro-slaves and one bro-master on different machines.
+TILL HERE: FINE
 
-Use the following command to run and detach to daemon mode:
+FROM HERE: BROKEN
 
-```
-docker-compose -f compose-beemaster-server.yaml up -d --build
-docker-compose -f compose-honeypot-server.yaml up -d --build
-```
-
+Use `./cluster-beemaster.sh start` or `stop` for creating a multi host docker (service-managed) beemaster cluster. 

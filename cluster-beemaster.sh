@@ -6,11 +6,12 @@
 ## where the repositories of mp-ids-bro and mp-ids-hp are present in the same directory
 ################
 
-NETWORK=beemaster-overlay
+NETWORK=bm
 DIO=dionaea
 SLAVE=bro-slave
 MASTER=bro-master
 CONNECTOR=connector
+
 
 set -ea
 
@@ -35,7 +36,6 @@ function start {
     echo "Creating docker services on this host machine ..."
     ## run three slaves
     docker service create \
-        --constraint 'node.role == manager' \
         --replicas 3 \
         --network $NETWORK \
         --mount type=bind,source=/var/beemaster/log/bro-slave,destination=/usr/local/bro/logs \
@@ -44,7 +44,6 @@ function start {
 
     ## run a master
     docker service create \
-        --constraint 'node.role == manager' \
         --replicas 1 \
         --network $NETWORK \
         --mount type=bind,source=/var/beemaster/log/bro-master,destination=/usr/local/bro/logs \
@@ -54,8 +53,19 @@ function start {
 
     echo "Creating docker services on worker machine (not this machine) ..."
     ## run honeypots & connectors, make sure its _not_ on the beemaster server (which is labeled as manager)
-    docker service create --constraint 'node.role != manager' --replicas 5 --network $NETWORK --name $CONNECTOR $CONNECTOR
-    docker service create --constraint 'node.role != manager' --replicas 5 --network $NETWORK --name $DIO $DIO
+
+    docker service create \
+        --replicas 1 \
+        --network $NETWORK \
+        --name $CONNECTOR \
+        $CONNECTOR "config-docker.yaml"
+
+    docker service create \
+        --constraint 'node.hostname != iss2' \
+        --replicas 1 \
+        --network $NETWORK \
+        --name $DIO \
+        $DIO
 
     echo "Docker services created and spanned accross the cluster"
 }
@@ -82,7 +92,7 @@ case $i in
         stop
     ;;
     *)
-        # unknown option
+        echo "Use either start or stop command."
     ;;
 esac
 done
