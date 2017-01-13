@@ -27,11 +27,10 @@ global rebalance_all: function();
 
 event bro_init() {
     log_bro("bro_master.bro: bro_init()");
-    Broker::enable([$auto_publish=T]);
+    Broker::enable([$auto_publish=T, $auto_routing=T]);
 
     Broker::listen(broker_port, "0.0.0.0");
 
-    Broker::subscribe_to_events("bro/forwarder");
     Broker::subscribe_to_events("honeypot/dionaea");
     Broker::subscribe_to_events_multi("honeypot/dionaea");
 
