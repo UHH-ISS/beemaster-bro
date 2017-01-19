@@ -1,4 +1,4 @@
-#Bro aus Repo installieren:
+# Bro aus Repo installieren:
 
 Es gibt eine [Doku](https://www.bro.org/development/projects/deep-cluster.html).
 
@@ -23,10 +23,12 @@ sudo make install
 Wir werden Bro in einem Container Setup nutzen. Auf Alpinebasis scheint das grade nicht machbar zu sein, weil diverse Libs nicht existieren (ist ja auch eine minimalistische Linux Distro..) Unser Image ist daher mit dem neuesten Debian gemacht, Debian:Stretch. Die Lib-Versionen sollten nicht angefasst werden...
 Libcaf funktioniert nur mit v <= 0.14.5
 
-Bro im Container bauen + starten:
+Bro im Container bauen + starten: [start.sh](iss/mp-ids-bro/blob/master/start.sh) ausführen.
+Alternativ: Einen Bro-Master starten 
+(purpose beim Build angeben und entsprechende Skripte beim Starten übergeben):
 ~~~~
-docker build . -t bro # achtung das dauert lange
-docker run bro
+docker build . -t bro-master --build-arg PURPOSE=master # Achtung, das dauert beim ersten Mal sehr lange
+docker run --name bro-master --rm -v /var/beemaster/log/bro-master/:/usr/local/bro/logs/ bro-master "/bro/scripts_master/"
 ~~~~
 
 #### Bro Configuration
