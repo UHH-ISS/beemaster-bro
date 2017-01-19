@@ -7,6 +7,7 @@
 @load ./dio_mysql_login.bro
 @load ./dio_smb_bind.bro
 @load ./dio_smb_request.bro
+@load ./dio_blackhole.bro
 
 const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
@@ -19,6 +20,7 @@ global dionaea_download_complete: event(timestamp: time, id: string, local_ip: a
 global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string);
 global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string);
 global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
+global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string);
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
 global slaves: table[string] of count;
@@ -117,6 +119,14 @@ event dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: 
     Log::write(Dio_smb_bind::LOG, rec);
 }
 
+event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
+    local lport: port = count_to_port(local_port, get_protocol(transport));
+    local rport: port = count_to_port(remote_port, get_protocol(transport));
+
+    local rec: Dio_blackhole::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $input=input, $length=length, $origin=origin, $connector_id=connector_id];
+
+    Log::write(Dio_blackhole::LOG, rec);
+}
 
 event Broker::incoming_connection_established(peer_name: string) {
     print "Incoming connection established " + peer_name;

@@ -11,6 +11,8 @@ global dionaea_download_complete: event(timestamp: time, id: string, local_ip: a
 global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string);
 global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string);
 global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
+global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string);
+
 global log_bro: function(msg: string);
 global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind" };
 
@@ -66,6 +68,10 @@ event dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_por
 event dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string) {
 
     event dionaea_smb_bind(timestamp, id, local_ip, local_port, remote_ip, remote_port, transport, protocol, transfersyntax, uuid, origin, connector_id);
+}
+event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
+
+    event dionaea_blackhole(timestamp, id, local_ip, local_port, remote_ip, remote_port, transport, protocol, input, length, origin, connector_id);
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
