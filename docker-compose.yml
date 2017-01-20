@@ -2,15 +2,17 @@ version: '2'
 # This Composefile uses named volumes for simplicity. The actual data is saved to /var/lib/docker/volumes/$VOLUME/_data.
 # Build args are passed to the Dockerfile to determine the container's purpose.
 
-volumes:
-  dionaea-logs:
-
 services:
   bro-master:
     build: 
       context: ./mp-ids-bro
       args:
         PURPOSE: master
+    environment:
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - 9999:9999
     command: ["/bro/scripts_master/"]
     volumes:
       - /var/beemaster/log/bro-master:/usr/local/bro/logs
@@ -20,118 +22,30 @@ services:
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
+    environment:
+      - SLAVE_PUBLIC_PORT=9991
+      - SLAVE_PUBLIC_IP=bro-slave-1
+      - MASTER_PUBLIC_PORT=9991
+      - MASTER_PUBLIC_IP=bro-master
+    ports:
+      - 9991:9999
     command: ["/bro/scripts_slave/"]
     volumes:
       - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
-    depends_on:
-      - bro-master
 
-  bro-slave-2:
-    build:
-      context: ./mp-ids-bro
-      args:
-        PURPOSE: slave
-    command: ["/bro/scripts_slave/"]
-    volumes:
-      - /var/beemaster/log/bro-slave-2:/usr/local/bro/logs
-    depends_on:
-      - bro-master
-
-  bro-slave-3:
-    build:
-      context: ./mp-ids-bro
-      args:
-        PURPOSE: slave
-    command: ["/bro/scripts_slave/"]
-    volumes:
-      - /var/beemaster/log/bro-slave-3:/usr/local/bro/logs
-    depends_on:
-      - bro-master
-
-  connector-1:
+  connector:
     build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-    depends_on:
-      - bro-master
+    command: ["config-docker.yaml"]
 
-  connector-2:
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-    depends_on:
-      - bro-master
-
-  connector-3:
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-    depends_on:
-      - bro-master
-
-  connector-4:
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-    depends_on:
-      - bro-master
-
-  connector-5:
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-    depends_on:
-      - bro-master
-
-  dionaea-1:
+  dionaea:
     build: ./mp-ids-hp/dionaea
-    links:
-      - connector-1:connector
     depends_on:
-      - connector-1
+      - connector
     volumes:
-      - dionaea-logs:/var/dionaea/logs
+      - /var/beemaster/log/dionaea-logs:/var/dionaea/logs
     ports:
-      - 127.0.0.1:21:21
-      - 127.0.0.1:81:80
-      - 127.0.0.1:4433:443
-      - 127.0.0.1:3306:3306
-
-  dionaea-2:
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-2:connector
-    depends_on:
-      - connector-2
-    volumes:
-      - dionaea-logs:/var/dionaea/logs
-    ports:
-      - 127.0.0.1:82:80
-
-  dionaea-3:
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-3:connector
-    depends_on:
-      - connector-3
-    volumes:
-      - dionaea-logs:/var/dionaea/logs
-    ports:
-      - 127.0.0.1:83:80
-
-  dionaea-4:
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-4:connector
-    depends_on:
-      - connector-4
-    volumes:
-      - dionaea-logs:/var/dionaea/logs
-    ports:
-      - 127.0.0.1:84:80
-
-  dionaea-5:
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-5:connector
-    depends_on:
-      - connector-5
-    volumes:
-      - dionaea-logs:/var/dionaea/logs
-    ports:
-      - 127.0.0.1:85:80
+      - "21:21"
+      - "80:80"
+      - "443:443"
+      - "445:445"
+      - "3306:3306"
