@@ -23,9 +23,9 @@ services:
       args:
         PURPOSE: slave
     environment:
-      - SLAVE_PUBLIC_PORT=9991
+      - SLAVE_PUBLIC_PORT=9999
       - SLAVE_PUBLIC_IP=bro-slave-1
-      - MASTER_PUBLIC_PORT=9991
+      - MASTER_PUBLIC_PORT=9999
       - MASTER_PUBLIC_IP=bro-master
     ports:
       - 9991:9999
