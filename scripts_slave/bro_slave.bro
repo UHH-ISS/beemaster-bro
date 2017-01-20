@@ -86,18 +86,15 @@ event Broker::incoming_connection_broken(peer_name: string) {
     local msg: string = "Incoming_connection_broken " + peer_name;
     log_bro(msg);
 }
-
 event Broker::outgoing_connection_established(peer_address: string, peer_port: port, peer_name: string) {
-  local msg: string = "Outgoing connection established to: " + peer_address; 
-  log_bro(msg);
+    local msg: string = "Outgoing connection established to: " + peer_address; 
+    log_bro(msg);
 }
-
 event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, peer_name: string) {
-  local msg: string = "Outgoing connection broken with: " + peer_address;
-  log_bro(msg);
+    local msg: string = "Outgoing connection broken with: " + peer_address;
+    log_bro(msg);
 }
-
 function log_bro(msg: string) {
-  local rec: Brolog::Info = [$msg=msg];
-  Log::write(Brolog::LOG, rec);
+    local rec: Brolog::Info = [$msg=msg];
+    Log::write(Brolog::LOG, rec);
 }
