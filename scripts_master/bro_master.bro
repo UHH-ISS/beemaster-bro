@@ -8,9 +8,16 @@
 @load ./dio_smb_bind.bro
 @load ./dio_smb_request.bro
 
-const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
-redef Broker::endpoint_name = "bro_master";
+# the port and IP that are externally routable for this master
+const public_broker_port: string = getenv("MASTER_PUBLIC_PORT") &redef;
+const public_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
+
+# the port that is internally used (inside the container) to listen to
+const broker_port: port = 9999/tcp &redef;
+
+redef Broker::endpoint_name = cat("bro-master-", public_broker_ip, ":", public_broker_port);
+
 global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
 global dionaea_ftp: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string);
 global dionaea_mysql_command: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, origin: string, connector_id: string);
