@@ -26,6 +26,8 @@ global dionaea_download_complete: event(timestamp: time, id: string, local_ip: a
 global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string);
 global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string);
 global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
+global log_conn: event(rec: Conn::Info);
+
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
 global slaves: table[string] of count;
@@ -134,6 +136,11 @@ event Broker::incoming_connection_broken(peer_name: string) {
     print "Incoming connection broken for " + peer_name;
     log_bro("Incoming connection broken for " + peer_name);
     remove_from_balance(peer_name);
+}
+
+# beemaster event wrapper to forward some given connection log record to this masters 'conn.log'
+event log_conn(rec: Conn::Info) {
+    Log::write(Conn::LOG, rec);
 }
 function get_protocol(proto_str: string) : transport_proto {
     # https://www.bro.org/sphinx/scripts/base/init-bare.bro.html#type-transport_proto
