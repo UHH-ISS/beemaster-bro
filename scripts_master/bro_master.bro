@@ -1,4 +1,5 @@
 @load ./master_log.bro
+@load ./balance_log.bro
 @load ./dio_access.bro
 @load ./dio_download_complete.bro
 @load ./dio_download_offer.bro
@@ -28,6 +29,7 @@ global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, l
 global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
+global log_balance: function(connector: string, slave: string);
 global slaves: table[string] of count;
 global connectors: opaque of Broker::Handle;
 global add_to_balance: function(peer_name: string);
@@ -38,10 +40,10 @@ event bro_init() {
     log_bro("bro_master.bro: bro_init()");
     Broker::enable([$auto_publish=T, $auto_routing=T]);
 
-    Broker::listen(broker_port, "0.0.0.0");
-
     Broker::subscribe_to_events("honeypot/dionaea");
     Broker::subscribe_to_events_multi("honeypot/dionaea");
+
+    Broker::listen(broker_port, "0.0.0.0");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
@@ -149,11 +151,6 @@ function get_protocol(proto_str: string) : transport_proto {
     return unknown_transport;
 }
 
-function log_bro(msg:string) {
-    local rec: Brolog::Info = [$msg=msg];
-    Log::write(Brolog::LOG, rec);
-}
-
 function add_to_balance(peer_name: string) {
     if(/bro-slave-/ in peer_name) {
         slaves[peer_name] = 0;
@@ -179,6 +176,7 @@ function add_to_balance(peer_name: string) {
         if (best_slave != "") {
             ++slaves[best_slave];
             print "Registered connector", peer_name, "and balanced to", best_slave;
+            log_balance(peer_name, best_slave);
             log_bro("Registered connector " + peer_name + " and balanced to " + best_slave);
         }
         else {
@@ -246,6 +244,7 @@ function rebalance_all() {
             local j = 0;
             while (j < i) {
                 local connector = connector_vector[j];
+                log_balance(connector, "");
                 Broker::insert(connectors, Broker::data(connector), Broker::data(""));
                 ++j;
             }
@@ -265,6 +264,7 @@ function rebalance_all() {
                 local rebalanced_conn = connector_vector[total_connectors];
                 Broker::insert(connectors, Broker::data(rebalanced_conn), Broker::data(balanced_to));
                 print "Rebalanced connector", rebalanced_conn, "to slave", balanced_to;
+                log_balance(rebalanced_conn, balanced_to);
                 log_bro("Rebalanced connector " + rebalanced_conn + " to slave " + balanced_to);
             }
         }
@@ -272,4 +272,14 @@ function rebalance_all() {
     timeout 100msec {
         log_bro("ERROR: Unable to query keys in 'connectors-data-store' within 100ms, timeout");
     }
+}
+
+function log_bro(msg:string) {
+    local rec: Brolog::Info = [$msg=msg];
+    Log::write(Brolog::LOG, rec);
+}
+
+function log_balance(connector: string, slave: string) {
+    local rec: BalanceLog::Info = [$connector=connector, $slave=slave];
+    Log::write(BalanceLog::LOG, rec);
 }
