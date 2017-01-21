@@ -194,7 +194,6 @@ function remove_from_balance(peer_name: string) {
 
         print "Unregistered old slave ", peer_name;
         log_bro("Unregistered old slave " + peer_name + " ...");
-        log_balance(peer_name, "");
 
         rebalance_all();
     }
