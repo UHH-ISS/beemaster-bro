@@ -5,6 +5,15 @@
 - slave.bro forwards one normal event (to verify that things generally do work)
 - slave.bro announces multihop event, but does not implement a handler
 
+### Start / Use
+
+- open three terminals
+- do `bro -Q master.bro` in one terminal
+- do `bro -Q slave.bro` in another terminal
+- maybe fix the symlink to the _pybroker.so for your system
+- do `python2 talker.py`
+- normal events should go through, mutlihop event doesnt
+
 ### Expected normal behavior
 
 - Master defines global event signature and implements event
