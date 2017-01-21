@@ -157,7 +157,7 @@ function add_to_balance(peer_name: string) {
 
         print "Registered new slave ", peer_name;
         log_bro("Registered new slave " + peer_name);
-        
+        log_balance("", peer_name);
         rebalance_all();
     }
     if(/beemaster-connector-/ in peer_name) {
@@ -182,6 +182,7 @@ function add_to_balance(peer_name: string) {
         else {
             print "Could not balance connector", peer_name, "because no slaves are ready";
             log_bro("Could not balance connector " + peer_name + " because no slaves are ready");
+            log_balance(peer_name, "");
         }
         
     }
@@ -193,6 +194,7 @@ function remove_from_balance(peer_name: string) {
 
         print "Unregistered old slave ", peer_name;
         log_bro("Unregistered old slave " + peer_name + " ...");
+        log_balance(peer_name, "");
 
         rebalance_all();
     }
@@ -210,6 +212,7 @@ function remove_from_balance(peer_name: string) {
             if (count_conn > 0) {
                 slaves[connected_slave] = count_conn - 1;
                 print "Unregistered old connector", peer_name, "from slave", connected_slave;
+                log_balance("", connected_slave);
                 log_bro("Unregistered old connector " + peer_name + " from slave " + connected_slave);
             }
         }
