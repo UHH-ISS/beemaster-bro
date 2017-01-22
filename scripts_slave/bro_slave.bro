@@ -21,8 +21,10 @@ global dionaea_download_complete: event(timestamp: time, id: string, local_ip: a
 global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string);
 global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string);
 global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
+global log_conn: event(rec: Conn::Info);
+
 global log_bro: function(msg: string);
-global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind" };
+global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind", "log_conn" };
 
 
 event bro_init() {
@@ -94,6 +96,12 @@ event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, 
     local msg: string = "Outgoing connection broken with: " + peer_address;
     log_bro(msg);
 }
+
+# forwarding when some local connection is beeing logged. Throws an explicit beemaster event to forward.
+event Conn::log_conn(rec: Conn::Info) {
+    event log_conn(rec);
+}
+
 function log_bro(msg: string) {
     local rec: Brolog::Info = [$msg=msg];
     Log::write(Brolog::LOG, rec);

@@ -68,6 +68,12 @@ COPY scripts\_$PURPOSE scripts\_$PURPOSE
 # Currently, Bro stores logs in pwd when started. 
 WORKDIR /usr/local/bro/logs
 
+ENV PATH=/usr/local/bro/bin:$PATH
+
+ENV BROPATH=.:/usr/local/bro/share/bro:/usr/local/bro/share/bro/policy:/usr/local/bro/share/bro/site
+
 # in here is currently only the dionaea_receiver bro, which blocks until it receives sth via a broker-client
 # if it would not block, the container would exit immediately.
-ENTRYPOINT ["/usr/local/bro/bin/bro", "-Q"]
+
+# -C do not checksum request validity (docker foo!)
+ENTRYPOINT ["bro", "-Q", "-C", "-i", "eth0"]

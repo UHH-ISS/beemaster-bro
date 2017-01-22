@@ -20,16 +20,10 @@ sudo make install
 
 ## Docker Container
 
-Wir werden Bro in einem Container Setup nutzen. Auf Alpinebasis scheint das grade nicht machbar zu sein, weil diverse Libs nicht existieren (ist ja auch eine minimalistische Linux Distro..) Unser Image ist daher mit dem neuesten Debian gemacht, Debian:Stretch. Die Lib-Versionen sollten nicht angefasst werden...
+Wir nutzen Bro in einem Container Setup. Auf Alpinebasis scheint das grade nicht machbar zu sein, weil diverse Libs nicht existieren (ist ja auch eine minimalistische Linux Distro..) Unser Image ist daher mit dem neuesten Debian gemacht, Debian:Stretch. Die Lib-Versionen sollten nicht angefasst werden...
 Libcaf funktioniert nur mit v <= 0.14.5
 
-Bro im Container bauen + starten: [start.sh](iss/mp-ids-bro/blob/master/start.sh) ausführen.
-Alternativ: Einen Bro-Master starten 
-(purpose beim Build angeben und entsprechende Skripte beim Starten übergeben):
-~~~~
-docker build . -t bro-master --build-arg PURPOSE=master # Achtung, das dauert beim ersten Mal sehr lange
-docker run --name bro-master --rm -v /var/beemaster/log/bro-master/:/usr/local/bro/logs/ bro-master "/bro/scripts_master/"
-~~~~
+Bro im Container bauen + starten: [start.sh](iss/mp-ids-bro/blob/master/start.sh) ausführen (startet einen Bro Master)
 
 #### Bro Configuration
 
@@ -61,3 +55,8 @@ jemalloc:          false
 
 ================================================================
 ~~~~
+
+### Connection Monitoring im Container
+
+Durch die Startparameter und Einvironment Variables im Container wird Bro derart gestartet, dass jegliche Connections geloggt werden. Zudem werden unsere beemaster Skripte ausgeführt, jenach `PURPOSE` wird hier zwischen Master und Slave unterschieden. 
+Die Connections werden geloggt und - im Falle von Slaves - über einen Eventwrapper an den Master weitergeleitet. Am Ende hat also jeder Slave seinen eigenen `conn.log` und der Master hat einen großen `conn.log` mit seinen Connections und denen aller verbundener Slaves drin.
