@@ -14,7 +14,7 @@ global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, loca
 global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string);
 
 global log_bro: function(msg: string);
-global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind" };
+global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind", "dionaea_blackhole" };
 
 
 event bro_init() {

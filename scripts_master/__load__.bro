@@ -8,3 +8,4 @@
 @load ./dio_mysql_login.bro
 @load ./dio_smb_bind.bro
 @load ./dio_smb_request.bro
+@load ./dio_blackhole.bro
