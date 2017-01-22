@@ -51,7 +51,7 @@ RUN git checkout topic/mfischer/deep-cluster && \
 	git checkout topic/mfischer/broker-multihop && \
 	cd ../..
 
-RUN ./configure --disable-broccoli --disable-python 
+RUN ./configure --disable-broccoli --disable-python
 RUN make -j4 install
 
 WORKDIR /bro
@@ -61,19 +61,19 @@ EXPOSE 9999
 
 COPY config/etc /usr/local/bro/etc
 
-# Copy the right scripts folder. Defaults to slave scripts.
-ARG PURPOSE
-COPY scripts\_$PURPOSE scripts\_$PURPOSE
+# Copy shared scripts
+COPY scripts\_shared scripts
 
-# Currently, Bro stores logs in pwd when started. 
+# Copy the right scripts folder according to PURPOSE. Defaults to slave scripts.
+ARG PURPOSE
+COPY scripts\_$PURPOSE scripts
+
+# Currently, Bro stores logs in pwd when started.
 WORKDIR /usr/local/bro/logs
 
 ENV PATH=/usr/local/bro/bin:$PATH
 
 ENV BROPATH=.:/usr/local/bro/share/bro:/usr/local/bro/share/bro/policy:/usr/local/bro/share/bro/site
 
-# in here is currently only the dionaea_receiver bro, which blocks until it receives sth via a broker-client
-# if it would not block, the container would exit immediately.
-
 # -C do not checksum request validity (docker foo!)
-ENTRYPOINT ["bro", "-Q", "-C", "-i", "eth0"]
+ENTRYPOINT ["bro", "-Q", "-C", "-i", "eth0", "/bro/scripts/"]

@@ -8,7 +8,7 @@ volumes:
 
 services:
   bro-slave-3:
-    build: 
+    build:
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
@@ -19,7 +19,6 @@ services:
       - MASTER_PUBLIC_IP=134.100.28.31
     ports:
       - 9993:9999
-    command: ["/bro/scripts_slave/"]
     volumes:
       - slave-logs:/usr/local/bro/logs
 

@@ -4,7 +4,7 @@ version: '2'
 
 services:
   bro-master:
-    build: 
+    build:
       context: ./mp-ids-bro
       args:
         PURPOSE: master
@@ -13,12 +13,11 @@ services:
       - MASTER_PUBLIC_IP=bro-master
     ports:
       - 9999:9999
-    command: ["/bro/scripts_master/"]
     volumes:
       - /var/beemaster/log/bro-master:/usr/local/bro/logs
 
   bro-slave-1:
-    build: 
+    build:
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
@@ -29,7 +28,6 @@ services:
       - MASTER_PUBLIC_IP=bro-master
     ports:
       - 9991:9999
-    command: ["/bro/scripts_slave/"]
     volumes:
       - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
 
