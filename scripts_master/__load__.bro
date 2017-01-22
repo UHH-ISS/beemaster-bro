@@ -1,4 +1,5 @@
 @load ./master_log.bro
+@load ./balance_log.bro
 @load ./bro_master.bro
 @load ./dio_access.bro
 @load ./dio_download_complete.bro
