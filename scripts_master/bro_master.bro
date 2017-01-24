@@ -30,6 +30,7 @@ global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, loca
 global log_conn: event(rec: Conn::Info);
 
 global get_protocol: function(proto_str: string) : transport_proto;
+global mhr_lookup: function(hash: string) : string;
 global log_bro: function(msg: string);
 global log_balance: function(connector: string, slave: string);
 global slaves: table[string] of count;
@@ -93,10 +94,12 @@ event dionaea_mysql_login(timestamp: time, id: string, local_ip: addr, local_por
 }
 
 event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string) {
+    log_bro("dionaea_download_complete triggered");
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
+    local detection_rate: string = mhr_lookup(md5hash);
 
-    local rec: Dio_download_complete::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $url=url, $md5hash=md5hash, $filelocation=filelocation, $origin=origin, $connector_id=connector_id];
+    local rec: Dio_download_complete::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $url=url, $md5hash=md5hash, $detection_rate=detection_rate, $filelocation=filelocation, $origin=origin, $connector_id=connector_id];
 
     Log::write(Dio_download_complete::LOG, rec);
 }
@@ -280,6 +283,28 @@ function rebalance_all() {
     }
     timeout 100msec {
         log_bro("ERROR: Unable to query keys in 'connectors-data-store' within 100ms, timeout");
+    }
+}
+
+function mhr_lookup(hash: string): string {
+    local hash_domain = fmt("%s.malware.hash.cymru.com", hash);
+
+    when ( local MHR_result = lookup_hostname_txt(hash_domain) ) {
+        # Data is returned as "<timestampLastSeen> <detectionRate>"
+        local MHR_answer = split_string1(MHR_result, / /);
+
+        if ( |MHR_answer| == 2 ) {
+            log_bro("MHR lookup returned " + MHR_answer[0] + " " + MHR_answer[1]);
+            return MHR_answer[1];
+        }
+        else {
+          log_bro("MHR lookup for " + hash + " did not match anything");
+          return "NO DATA";
+        }
+    }
+    timeout 100msec { 
+      log_bro("ERROR: Unable to query " + hash_domain + " within 100ms, timeout");
+      return "CYMRU TIMEOUT";
     }
 }
 
