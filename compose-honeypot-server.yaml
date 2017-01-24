@@ -3,171 +3,39 @@ version: '2'
 # Build args are passed to the Dockerfile to determine the container's purpose.
 
 volumes:
-  master-logs:
-  slave-1-logs:
-  dionaea-logs-0:
-  dionaea-logs-1:
-  dionaea-logs-2:
-  dionaea-logs-3:
-  dionaea-logs-4:
-  dionaea-logs-5:
+  dionaea-logs:
+  slave-logs:
 
 services:
-  bro-slave-1:
-    networks:
-      - beemaster-demo
+  bro-slave-3:
     build: 
       context: ./mp-ids-bro
       args:
         PURPOSE: slave
+    environment:
+      - SLAVE_PUBLIC_PORT=9993
+      - SLAVE_PUBLIC_IP=138.201.158.43
+      - MASTER_PUBLIC_PORT=9999
+      - MASTER_PUBLIC_IP=134.100.28.31
+    ports:
+      - 9993:9999
     command: ["/bro/scripts_slave/"]
     volumes:
-      - slave-1-logs:/usr/local/bro/logs
+      - slave-logs:/usr/local/bro/logs
 
-  connector-0:
-    networks:
-      - beemaster-demo
+  connector:
     build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
+    command: ["config-uhh.yaml"]
 
-  connector-1:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-
-  connector-2:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-
-  connector-3:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-
-  connector-4:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-
-  connector-5:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/connector
-    command: ["--saddr","bro-master","--sport","9999"]
-
-  dionaea-0:
-    networks:
-      - beemaster-demo
+  dionaea:
     build: ./mp-ids-hp/dionaea
-    links:
-      - connector-0:connector
     depends_on:
-      - connector-0
+      - connector
     volumes:
-      - dionaea-logs-0:/var/dionaea/logs
+      - dionaea-logs:/var/dionaea/logs
     ports:
       - "21:21"
-      - 80:80
-      - 137-139:137-139
-      - 443:443
-      - 445:445
-      - 3306:3306
-
-  dionaea-1:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-1:connector
-    depends_on:
-      - connector-1
-    volumes:
-      - dionaea-logs-1:/var/dionaea/logs
-    ports:
-      - "2121:21"
-      - 8081:80
-      - 8137-8139:137-139
-      - 4431:443
-      - 4451:445
-      - 33061:3306
-
-  dionaea-2:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-2:connector
-    depends_on:
-      - connector-2
-    volumes:
-      - dionaea-logs-2:/var/dionaea/logs
-    ports:
-      - "2122:21"
-      - 8082:80
-      - 9137-9139:137-139
-      - 4432:443
-      - 4452:445
-      - 33062:3306
-
-  dionaea-3:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-3:connector
-    depends_on:
-      - connector-3
-    volumes:
-      - dionaea-logs-3:/var/dionaea/logs
-    ports:
-      - "2123:21"
-      - 8083:80
-      - 10137-10139:137-139
-      - 4433:443
-      - 4453:445
-      - 33063:3306
-
-  dionaea-4:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-4:connector
-    depends_on:
-      - connector-4
-    volumes:
-      - dionaea-logs-4:/var/dionaea/logs
-    ports:
-      - "2124:21"
-      - 8084:80
-      - 11137-11139:137-139
-      - 4434:443
-      - 4454:445
-      - 33064:3306
-
-  dionaea-5:
-    networks:
-      - beemaster-demo
-    build: ./mp-ids-hp/dionaea
-    links:
-      - connector-5:connector
-    depends_on:
-      - connector-5
-    volumes:
-      - dionaea-logs-5:/var/dionaea/logs
-    ports:
-      - "2125:21"
-      - 8085:80
-      - 12137-12139:137-139
-      - 4435:443
-      - 4455:445
-      - 33065:3306
-
-networks:
-  beemaster-demo:
-    driver: overlay
+      - "80:80"
+      - "443:443"
+      - "445:445"
+      - "3306:3306"

@@ -1,8 +1,18 @@
 @load ./slave_log.bro
 
-const broker_port: port = 9999/tcp &redef;
 redef exit_only_after_terminate = T;
-redef Broker::endpoint_name = "bro-slave-" + gethostname(); # make sure this is unique (for docker-compose, it is!)
+
+# the ports and IPs that are externally routable for a master and this slave
+const slave_broker_port: string = getenv("SLAVE_PUBLIC_PORT") &redef;
+const slave_broker_ip: string = getenv("SLAVE_PUBLIC_IP") &redef;
+const master_broker_port: port = to_port(cat(getenv("MASTER_PUBLIC_PORT"), "/tcp")) &redef;
+const master_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
+
+# the port that is internally used (inside the container) to listen to
+const broker_port: port = 9999/tcp &redef;
+
+redef Broker::endpoint_name = cat("bro-slave-", slave_broker_ip, ":", slave_broker_port);
+
 global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
 global dionaea_ftp: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string);
 global dionaea_mysql_command: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, origin: string, connector_id: string);
@@ -12,9 +22,9 @@ global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr
 global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string);
 global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
 global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string);
-
 global log_bro: function(msg: string);
-global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind", "dionaea_blackhole" };
+global log_conn: event(rec: Conn::Info);
+global published_events: set[string] = { "dionaea_access", "dionaea_ftp", "dionaea_mysql_command", "dionaea_mysql_login", "dionaea_download_complete", "dionaea_download_offer", "dionaea_smb_request", "dionaea_smb_bind", "dionaea_blackhole", "log_conn"};
 
 
 event bro_init() {
@@ -27,7 +37,7 @@ event bro_init() {
     Broker::subscribe_to_events_multi("honeypot/dionaea");
     
     # Forwarding
-    Broker::connect("bro-master", broker_port, 1sec);
+    Broker::connect(master_broker_ip, master_broker_port, 1sec);
     Broker::register_broker_events("honeypot/dionaea", published_events);
 
     # Try unsolicited option, which should prevent topic issues
@@ -82,18 +92,21 @@ event Broker::incoming_connection_broken(peer_name: string) {
     local msg: string = "Incoming_connection_broken " + peer_name;
     log_bro(msg);
 }
-
 event Broker::outgoing_connection_established(peer_address: string, peer_port: port, peer_name: string) {
-  local msg: string = "Outgoing connection established to: " + peer_address; 
-  log_bro(msg);
+    local msg: string = "Outgoing connection established to: " + peer_address; 
+    log_bro(msg);
+}
+event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, peer_name: string) {
+    local msg: string = "Outgoing connection broken with: " + peer_address;
+    log_bro(msg);
 }
 
-event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, peer_name: string) {
-  local msg: string = "Outgoing connection broken with: " + peer_address;
-  log_bro(msg);
+# forwarding when some local connection is beeing logged. Throws an explicit beemaster event to forward.
+event Conn::log_conn(rec: Conn::Info) {
+    event log_conn(rec);
 }
 
 function log_bro(msg: string) {
-  local rec: Brolog::Info = [$msg=msg];
-  Log::write(Brolog::LOG, rec);
+    local rec: Brolog::Info = [$msg=msg];
+    Log::write(Brolog::LOG, rec);
 }
