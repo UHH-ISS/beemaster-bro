@@ -6,9 +6,9 @@ global test_normal: event(body: string);
 
 
 event bro_init() {
-    Broker::enable([$auto_publish=T, $auto_routing=T]);
+    Broker::enable();
+    Broker::set_endpoint_flags([$auto_publish=T, $auto_routing=T]);
 
-    Broker::subscribe_to_events("test/topic");
     Broker::subscribe_to_events_multi("test/topic");
 
     Broker::listen(broker_port, "127.0.0.1");
