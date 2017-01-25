@@ -38,7 +38,6 @@ WORKDIR /scratch/actor-framework-0.14.5
 RUN ./configure
 RUN make -j4 install
 
-
 # get bro repository
 WORKDIR /scratch
 RUN git clone --recursive https://github.com/bro/bro /scratch/bro-git
@@ -74,7 +73,6 @@ COPY scripts\_$PURPOSE scripts
 
 # Currently, Bro stores logs in pwd when started.
 WORKDIR /usr/local/bro/logs
-
 
 # -C do not checksum request validity (docker foo!)
 ENTRYPOINT ["bro", "-Q", "-C", "-i", "eth0", "/bro/scripts/"]
