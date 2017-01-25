@@ -39,8 +39,6 @@ event bro_init() {
     Broker::connect(master_broker_ip, master_broker_port, 1sec);
     Broker::register_broker_events("honeypot/dionaea", published_events);
 
-    # Try unsolicited option, which should prevent topic issues
-    Broker::auto_event("honeypot/dionaea", dionaea_access);
     log_bro("bro_slave.bro: bro_init() done");
 }
 
