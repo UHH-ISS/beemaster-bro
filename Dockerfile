@@ -64,15 +64,15 @@ ENV BROPATH=.:/usr/local/bro/share/bro:/usr/local/bro/share/bro/policy:/usr/loca
 
 COPY config/etc /usr/local/bro/etc
 
+# Currently, Bro stores logs in pwd when started.
+WORKDIR /usr/local/bro/logs
+
 # Copy shared scripts
-COPY scripts\_shared scripts
+COPY scripts\_shared /bro/scripts
 
 # Copy the right scripts folder according to PURPOSE. Defaults to slave scripts.
 ARG PURPOSE
-COPY scripts\_$PURPOSE scripts
-
-# Currently, Bro stores logs in pwd when started.
-WORKDIR /usr/local/bro/logs
+COPY scripts\_$PURPOSE /bro/scripts
 
 # -C do not checksum request validity (docker foo!)
 ENTRYPOINT ["bro", "-Q", "-C", "-i", "eth0", "/bro/scripts/"]

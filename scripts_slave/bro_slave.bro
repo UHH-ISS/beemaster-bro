@@ -18,15 +18,15 @@ redef Broker::endpoint_name = cat("bro-slave-", slave_broker_ip, ":", slave_brok
 global log_bro: function(msg: string);
 
 global published_events: set[string] = {
-    "dionaea_access",
-    "dionaea_download_complete",
-    "dionaea_download_offer",
-    "dionaea_ftp",
-    "dionaea_mysql_command",
-    "dionaea_mysql_login",
-    "dionaea_smb_bind",
-    "dionaea_smb_request",
-    "log_conn"
+    "Beemaster::dionaea_access",
+    "Beemaster::dionaea_download_complete",
+    "Beemaster::dionaea_download_offer",
+    "Beemaster::dionaea_ftp",
+    "Beemaster::dionaea_mysql_command",
+    "Beemaster::dionaea_mysql_login",
+    "Beemaster::dionaea_smb_bind",
+    "Beemaster::dionaea_smb_request",
+    "Beemaster::log_conn"
 };
 
 event bro_init() {
@@ -68,7 +68,7 @@ event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, 
 
 # forwarding when some local connection is beeing logged. Throws an explicit beemaster event to forward.
 event Conn::log_conn(rec: Conn::Info) {
-    event log_conn(rec);
+    event Beemaster::log_conn(rec);
 }
 
 function log_bro(msg: string) {
