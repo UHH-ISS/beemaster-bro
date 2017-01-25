@@ -1,4 +1,4 @@
-@load ./slave_log.bro
+@load ./slave_log
 
 @load ./beemaster_types
 @load ./beemaster_events
@@ -17,29 +17,17 @@ redef Broker::endpoint_name = cat("bro-slave-", slave_broker_ip, ":", slave_brok
 
 global log_bro: function(msg: string);
 
-global published_events: set[string] = {
-    "Beemaster::dionaea_access",
-    "Beemaster::dionaea_download_complete",
-    "Beemaster::dionaea_download_offer",
-    "Beemaster::dionaea_ftp",
-    "Beemaster::dionaea_mysql_command",
-    "Beemaster::dionaea_mysql_login",
-    "Beemaster::dionaea_smb_bind",
-    "Beemaster::dionaea_smb_request",
-    "Beemaster::log_conn"
-};
-
 event bro_init() {
     log_bro("bro_slave.bro: bro_init()");
+
+    # Enable broker
     Broker::enable([$auto_publish=T, $auto_routing=T]);
 
-    # Listening
+    # Listen for incoming connectors/acus
     Broker::listen(broker_port, "0.0.0.0");
-    Broker::subscribe_to_events_multi("honeypot/dionaea");
 
-    # Forwarding
+    # Connect to bro-master for load-balancing and relaying events
     Broker::connect(master_broker_ip, master_broker_port, 1sec);
-    Broker::register_broker_events("honeypot/dionaea", published_events);
 
     log_bro("bro_slave.bro: bro_init() done");
 }
@@ -47,7 +35,6 @@ event bro_init() {
 event bro_done() {
   log_bro("bro_slave.bro: bro_done()");
 }
-
 
 event Broker::incoming_connection_established(peer_name: string) {
     local msg: string = "Incoming_connection_established " + peer_name;

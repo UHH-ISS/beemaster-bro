@@ -1,7 +1,8 @@
-@load ./beemaster_events
-
 @load ./master_log
 @load ./balance_log
+
+@load ./beemaster_events
+
 @load ./dio_access
 @load ./dio_download_complete
 @load ./dio_download_offer
@@ -31,9 +32,12 @@ global rebalance_all: function();
 
 event bro_init() {
     log_bro("bro_master.bro: bro_init()");
-    Broker::enable([$auto_publish=T, $auto_routing=T]);
 
+    # Enable broker and listen for incoming slaves/acus
+    Broker::enable([$auto_publish=T, $auto_routing=T]);
     Broker::listen(broker_port, "0.0.0.0");
+
+    # Subscribe to dionaea events for logging
     Broker::subscribe_to_events_multi("honeypot/dionaea");
 
     ## create a distributed datastore for the connector to link against:
@@ -132,6 +136,7 @@ event Broker::incoming_connection_broken(peer_name: string) {
 event Beemaster::log_conn(rec: Conn::Info) {
     Log::write(Conn::LOG, rec);
 }
+
 function get_protocol(proto_str: string) : transport_proto {
     # https://www.bro.org/sphinx/scripts/base/init-bare.bro.html#type-transport_proto
     if (proto_str == "tcp") {
