@@ -60,6 +60,9 @@ WORKDIR /bro
 # the dionaea_receiver.bro needs this port:
 EXPOSE 9999
 
+ENV PATH=/usr/local/bro/bin:$PATH
+ENV BROPATH=.:/usr/local/bro/share/bro:/usr/local/bro/share/bro/policy:/usr/local/bro/share/bro/site
+
 COPY config/etc /usr/local/bro/etc
 
 # Copy shared scripts
@@ -72,9 +75,6 @@ COPY scripts\_$PURPOSE scripts
 # Currently, Bro stores logs in pwd when started.
 WORKDIR /usr/local/bro/logs
 
-ENV PATH=/usr/local/bro/bin:$PATH
-
-ENV BROPATH=.:/usr/local/bro/share/bro:/usr/local/bro/share/bro/policy:/usr/local/bro/share/bro/site
 
 # -C do not checksum request validity (docker foo!)
 ENTRYPOINT ["bro", "-Q", "-C", "-i", "eth0", "/bro/scripts/"]
