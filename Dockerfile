@@ -44,9 +44,10 @@ WORKDIR /scratch
 RUN git clone --recursive https://github.com/bro/bro /scratch/bro-git
 WORKDIR /scratch/bro-git
 
-# use correct branches / submodules
+# use correct branches / submodules, tie the version to "multihop working" (3b46716)
 RUN git checkout topic/mfischer/deep-cluster && \
     git submodule update && \
+    git checkout 3b46716 && \
     cd aux/broker && \
     git checkout topic/mfischer/broker-multihop && \
     cd ../..
