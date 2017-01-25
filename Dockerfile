@@ -1,30 +1,30 @@
 FROM debian:stretch
 
 RUN apt-get update && apt-get install -y \
-	build-essential \
-	git \
-	bison \
-	flex \
-	gawk \
-	cmake \
-	swig \
-	libssl1.0-dev \
-	libgeoip-dev \
-	python \
-	python-dev \
-	libcurl4-openssl-dev \
-	wget \
-	libncurses5-dev \
-	ca-certificates \
-	librocksdb-dev \
-	libpcap-dev \
-	zlib1g-dev \
-	libtcmalloc-minimal4 \
-	curl \
-	google-perftools \
-	debhelper \
-	bc \
-	--no-install-recommends
+    build-essential \
+    git \
+    bison \
+    flex \
+    gawk \
+    cmake \
+    swig \
+    libssl1.0-dev \
+    libgeoip-dev \
+    python \
+    python-dev \
+    libcurl4-openssl-dev \
+    wget \
+    libncurses5-dev \
+    ca-certificates \
+    librocksdb-dev \
+    libpcap-dev \
+    zlib1g-dev \
+    libtcmalloc-minimal4 \
+    curl \
+    google-perftools \
+    debhelper \
+    bc \
+    --no-install-recommends
 
 # get actor framwork
 # RUN git clone https://github.com/actor-framework/actor-framework.git caf
@@ -46,10 +46,10 @@ WORKDIR /scratch/bro-git
 
 # use correct branches / submodules
 RUN git checkout topic/mfischer/deep-cluster && \
-	git submodule update && \
-	cd aux/broker && \
-	git checkout topic/mfischer/broker-multihop && \
-	cd ../..
+    git submodule update && \
+    cd aux/broker && \
+    git checkout topic/mfischer/broker-multihop && \
+    cd ../..
 
 RUN ./configure --disable-broccoli --disable-python
 RUN make -j4 install
