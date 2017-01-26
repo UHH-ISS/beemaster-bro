@@ -14,6 +14,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 #
 # Find the library
 find_package(Broker REQUIRED)
+find_package(Threads REQUIRED)
+
+
+
 # Add the headers to include directories
 include_directories(BEFORE ${BROKER_INCLUDE_DIR})
 # Add the library to the LINK_LIBS
@@ -24,4 +28,4 @@ set(SOURCE_FILES main.cpp)
 
 # Executable definition
 add_executable(acu_test ${SOURCE_FILES})
-target_link_libraries(acu_test ${LINK_LIBS})
+target_link_libraries(acu_test ${LINK_LIBS} pthread)

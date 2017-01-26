@@ -4,6 +4,8 @@
 #include <broker/endpoint.hh>
 #include <broker/message_queue.hh>
 #include <broker/time_point.hh>
+#include <future>
+
 
 const char *ep_name = "cpp_peer";
 
@@ -48,6 +50,12 @@ void DoPeer(std::string address, uint16_t port, std::vector<std::string> *topics
     }
 }
 
+void Peer(std::string address, uint16_t port, std::vector<std::string> *topics) {
+    // Fork an asynchronous receiver, return control flow / execution to caller:
+    std::thread(DoPeer, address, port, topics).detach();
+    return;
+}
+
 int main() {
     broker::init();
     // receive:
@@ -55,7 +63,7 @@ int main() {
     auto topics = new std::vector<std::string>();
     topics->push_back(topic);
 
-    DoPeer(address, port, topics);
+    Peer(address, port, topics);
 
     std::cin.get();
 

@@ -13,3 +13,7 @@ event bro_init() {
 event test_multi(body: string) {
     print "Master received multihop event: " + body;
 }
+
+event Broker::incoming_connection_established(peer_name: string) {
+    print "Incoming connection established " + peer_name;
+}
