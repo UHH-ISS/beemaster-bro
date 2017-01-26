@@ -37,6 +37,7 @@ export {
         opnum: count, uuid: string, origin: string, connector_id: string);
 
     # ## ACU EVENTS ##
+    global tcp_event: event(rec: AlertInfo, discriminant: count);
 
     # ## MISC EVENTS ##
 
