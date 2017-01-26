@@ -40,6 +40,9 @@ event bro_init() {
     # Subscribe to dionaea events for logging
     Broker::subscribe_to_events_multi("honeypot/dionaea");
 
+    # Subscribe to slave events for logging
+    Broker::subscribe_to_events_multi("slave/events");
+
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
 
@@ -132,7 +135,7 @@ event Broker::incoming_connection_broken(peer_name: string) {
     remove_from_balance(peer_name);
 }
 
-# beemaster event wrapper to forward some given connection log record to this masters 'conn.log'
+# Log slave log_conn events to the master's conn.log
 event Beemaster::log_conn(rec: Conn::Info) {
     Log::write(Conn::LOG, rec);
 }

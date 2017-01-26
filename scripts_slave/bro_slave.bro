@@ -15,19 +15,22 @@ const master_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
 const broker_port: port = 9999/tcp &redef;
 redef Broker::endpoint_name = cat("bro-slave-", slave_broker_ip, ":", slave_broker_port);
 
+global published_events: set[string] = { "Beemaster::log_conn" };
+
 global log_bro: function(msg: string);
 
 event bro_init() {
     log_bro("bro_slave.bro: bro_init()");
 
-    # Enable broker
+    # Enable broker and listen for incoming connectors/acus
     Broker::enable([$auto_publish=T, $auto_routing=T]);
-
-    # Listen for incoming connectors/acus
     Broker::listen(broker_port, "0.0.0.0");
 
     # Connect to bro-master for load-balancing and relaying events
     Broker::connect(master_broker_ip, master_broker_port, 1sec);
+
+    # Publish our local events to forward them to master/acus
+    Broker::register_broker_events("slave/events", published_events);
 
     log_bro("bro_slave.bro: bro_init() done");
 }
