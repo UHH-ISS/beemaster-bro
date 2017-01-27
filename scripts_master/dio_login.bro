@@ -1,4 +1,4 @@
-module Dio_mysql_login;
+module Dio_login;
 
 export {
   redef enum Log::ID += { LOG };
@@ -21,5 +21,5 @@ export {
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Dio_mysql_login::LOG, [$columns=Info, $path="dionaea_mysql_login"]);
+  Log::create_stream(Dio_login::LOG, [$columns=Info, $path="dionaea_login"]);
 }
