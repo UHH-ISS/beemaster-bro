@@ -1,13 +1,16 @@
-@load ./master_log.bro
-@load ./balance_log.bro
-@load ./dio_access.bro
-@load ./dio_download_complete.bro
-@load ./dio_download_offer.bro
-@load ./dio_ftp.bro
-@load ./dio_mysql_command.bro
-@load ./dio_mysql_login.bro
-@load ./dio_smb_bind.bro
-@load ./dio_smb_request.bro
+@load ./master_log
+@load ./balance_log
+
+@load ./beemaster_events
+
+@load ./dio_access
+@load ./dio_download_complete
+@load ./dio_download_offer
+@load ./dio_ftp
+@load ./dio_mysql_command
+@load ./dio_mysql_login
+@load ./dio_smb_bind
+@load ./dio_smb_request
 @load ./dio_blackhole.bro
 
 redef exit_only_after_terminate = T;
@@ -17,19 +20,8 @@ const public_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
 
 # the port that is internally used (inside the container) to listen to
 const broker_port: port = 9999/tcp &redef;
-
 redef Broker::endpoint_name = cat("bro-master-", public_broker_ip, ":", public_broker_port);
 
-global dionaea_access: event(timestamp: time, dst_ip: addr, dst_port: count, src_hostname: string, src_ip: addr, src_port: count, transport: string, protocol: string, connector_id: string);
-global dionaea_ftp: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string);
-global dionaea_mysql_command: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, origin: string, connector_id: string);
-global dionaea_mysql_login: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, username: string, password: string, origin: string, connector_id: string);
-global dionaea_download_complete: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string);
-global dionaea_download_offer: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string);
-global dionaea_smb_request: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string);
-global dionaea_smb_bind: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string);
-global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string);
-global log_conn: event(rec: Conn::Info);
 global get_protocol: function(proto_str: string) : transport_proto;
 global log_bro: function(msg: string);
 global log_balance: function(connector: string, slave: string);
@@ -41,11 +33,16 @@ global rebalance_all: function();
 
 event bro_init() {
     log_bro("bro_master.bro: bro_init()");
-    Broker::enable([$auto_publish=T, $auto_routing=T]);
 
+    # Enable broker and listen for incoming slaves/acus
+    Broker::enable([$auto_publish=T, $auto_routing=T]);
+    Broker::listen(broker_port, "0.0.0.0");
+
+    # Subscribe to dionaea events for logging
     Broker::subscribe_to_events_multi("honeypot/dionaea");
 
-    Broker::listen(broker_port, "0.0.0.0");
+    # Subscribe to slave events for logging
+    Broker::subscribe_to_events_multi("slave/events");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
@@ -56,7 +53,7 @@ event bro_done() {
     log_bro("bro_master.bro: bro_done()");
 }
 
-event dionaea_access(timestamp: time, local_ip: addr, local_port: count, remote_hostname: string, remote_ip: addr, remote_port: count, transport: string, protocol: string, connector_id: string) {
+event Beemaster::dionaea_access(timestamp: time, local_ip: addr, local_port: count, remote_hostname: string, remote_ip: addr, remote_port: count, transport: string, protocol: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -65,34 +62,7 @@ event dionaea_access(timestamp: time, local_ip: addr, local_port: count, remote_
     Log::write(Dio_access::LOG, rec);
 }
 
-event dionaea_ftp(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string) {
-    local lport: port = count_to_port(local_port, get_protocol(transport));
-    local rport: port = count_to_port(remote_port, get_protocol(transport));
-
-    local rec: Dio_ftp::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $command=command, $arguments=arguments, $origin=origin, $connector_id=connector_id];
-
-    Log::write(Dio_ftp::LOG, rec);
-}
-
-event dionaea_mysql_command(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, origin: string, connector_id: string) {
-    local lport: port = count_to_port(local_port, get_protocol(transport));
-    local rport: port = count_to_port(remote_port, get_protocol(transport));
-
-    local rec: Dio_mysql_command::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $args=args, $origin=origin, $connector_id=connector_id];
-
-    Log::write(Dio_mysql_command::LOG, rec);
-}
-
-event dionaea_mysql_login(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, username: string, password: string, origin: string, connector_id: string) {
-    local lport: port = count_to_port(local_port, get_protocol(transport));
-    local rport: port = count_to_port(remote_port, get_protocol(transport));
-
-    local rec: Dio_mysql_login::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $username=username, $password=password, $origin=origin, $connector_id=connector_id];
-
-    Log::write(Dio_mysql_login::LOG, rec);
-}
-
-event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -101,7 +71,7 @@ event dionaea_download_complete(timestamp: time, id: string, local_ip: addr, loc
     Log::write(Dio_download_complete::LOG, rec);
 }
 
-event dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -110,22 +80,49 @@ event dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_
     Log::write(Dio_download_offer::LOG, rec);
 }
 
-event dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_ftp(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
-    local rec: Dio_smb_request::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $opnum=opnum, $uuid=uuid, $origin=origin, $connector_id=connector_id];
+    local rec: Dio_ftp::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $command=command, $arguments=arguments, $origin=origin, $connector_id=connector_id];
 
-    Log::write(Dio_smb_request::LOG, rec);
+    Log::write(Dio_ftp::LOG, rec);
 }
 
-event dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_mysql_command(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, origin: string, connector_id: string) {
+    local lport: port = count_to_port(local_port, get_protocol(transport));
+    local rport: port = count_to_port(remote_port, get_protocol(transport));
+
+    local rec: Dio_mysql_command::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $args=args, $origin=origin, $connector_id=connector_id];
+
+    Log::write(Dio_mysql_command::LOG, rec);
+}
+
+event Beemaster::dionaea_mysql_login(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, username: string, password: string, origin: string, connector_id: string) {
+    local lport: port = count_to_port(local_port, get_protocol(transport));
+    local rport: port = count_to_port(remote_port, get_protocol(transport));
+
+    local rec: Dio_mysql_login::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $username=username, $password=password, $origin=origin, $connector_id=connector_id];
+
+    Log::write(Dio_mysql_login::LOG, rec);
+}
+
+event Beemaster::dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
     local rec: Dio_smb_bind::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $transfersyntax=transfersyntax, $uuid=uuid, $origin=origin, $connector_id=connector_id];
 
     Log::write(Dio_smb_bind::LOG, rec);
+}
+
+event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string) {
+    local lport: port = count_to_port(local_port, get_protocol(transport));
+    local rport: port = count_to_port(remote_port, get_protocol(transport));
+
+    local rec: Dio_smb_request::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $opnum=opnum, $uuid=uuid, $origin=origin, $connector_id=connector_id];
+
+    Log::write(Dio_smb_request::LOG, rec);
 }
 
 event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
@@ -148,10 +145,11 @@ event Broker::incoming_connection_broken(peer_name: string) {
     remove_from_balance(peer_name);
 }
 
-# beemaster event wrapper to forward some given connection log record to this masters 'conn.log'
-event log_conn(rec: Conn::Info) {
+# Log slave log_conn events to the master's conn.log
+event Beemaster::log_conn(rec: Conn::Info) {
     Log::write(Conn::LOG, rec);
 }
+
 function get_protocol(proto_str: string) : transport_proto {
     # https://www.bro.org/sphinx/scripts/base/init-bare.bro.html#type-transport_proto
     if (proto_str == "tcp") {
@@ -199,7 +197,7 @@ function add_to_balance(peer_name: string) {
             log_bro("Could not balance connector " + peer_name + " because no slaves are ready");
             log_balance(peer_name, "");
         }
-        
+
     }
 }
 
