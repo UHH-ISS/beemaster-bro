@@ -42,6 +42,10 @@ services:
     volumes:
       - /var/beemaster/log/dionaea-logs:/var/dionaea/logs
     ports:
+      - "23:23"
+      - "53:53/udp"
+      - "53:53"
+      - "123:123/udp"
       - "21:21"
       - "80:80"
       - "443:443"

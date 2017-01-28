@@ -11,6 +11,7 @@
 @load ./dio_mysql_login
 @load ./dio_smb_bind
 @load ./dio_smb_request
+@load ./dio_blackhole.bro
 
 redef exit_only_after_terminate = T;
 # the port and IP that are externally routable for this master
@@ -122,6 +123,15 @@ event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr
     local rec: Dio_smb_request::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $opnum=opnum, $uuid=uuid, $origin=origin, $connector_id=connector_id];
 
     Log::write(Dio_smb_request::LOG, rec);
+}
+
+event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
+    local lport: port = count_to_port(local_port, get_protocol(transport));
+    local rport: port = count_to_port(remote_port, get_protocol(transport));
+
+    local rec: Dio_blackhole::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $input=input, $length=length, $origin=origin, $connector_id=connector_id];
+
+    Log::write(Dio_blackhole::LOG, rec);
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
