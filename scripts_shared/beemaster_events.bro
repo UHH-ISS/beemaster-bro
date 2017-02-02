@@ -41,6 +41,7 @@ export {
         length: count, origin: string, connector_id: string);
 
     # ## ACU EVENTS ##
+		global acu_result: event (timestamp: time, attack_type: string);
 
     # ## MISC EVENTS ##
 

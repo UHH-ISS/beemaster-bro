@@ -12,6 +12,7 @@
 @load ./dio_smb_bind
 @load ./dio_smb_request
 @load ./dio_blackhole.bro
+@load ./acu_result.bro
 
 redef exit_only_after_terminate = T;
 # the port and IP that are externally routable for this master
@@ -132,6 +133,11 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
     local rec: Dio_blackhole::Info = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $input=input, $length=length, $origin=origin, $connector_id=connector_id];
 
     Log::write(Dio_blackhole::LOG, rec);
+}
+
+event acu_result(timestamp: time, attack_type: string) {
+    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack_type];
+    Log::write(Acu_result::LOG, rec);
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
