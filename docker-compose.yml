@@ -1,6 +1,7 @@
 version: '2'
 # This Composefile uses named volumes for simplicity. The actual data is saved to /var/lib/docker/volumes/$VOLUME/_data.
 # Build args are passed to the Dockerfile to determine the container's purpose.
+# To enable persistent Dionaea downloads, uncomment the corresponding volume moints in the dionaea section.
 
 services:
   bro-master:
@@ -41,8 +42,8 @@ services:
       - connector
     volumes:
       - /var/beemaster/log/dionaea-logs:/var/dionaea/logs
-      - /var/beemaster/dionaea/binaries:/var/dionaea/binaries/
-      - /var/beemaster/dionaea/ftp:/var/dionaea/roots/ftp
+    #  - /var/beemaster/dionaea/binaries:/var/dionaea/binaries/
+    #  - /var/beemaster/dionaea/ftp:/var/dionaea/roots/ftp
     ports:
       - "21:21"
       - "80:80"
