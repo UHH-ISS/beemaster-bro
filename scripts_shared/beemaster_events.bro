@@ -24,7 +24,7 @@ export {
         remote_ip: addr, remote_port: count, transport: string, protocol: string,
         args: string, origin: string, connector_id: string);
     # MySQL login
-    global dionaea_mysql_login: event(timestamp: time, id: string, local_ip: addr, local_port: count,
+    global dionaea_login: event(timestamp: time, id: string, local_ip: addr, local_port: count,
         remote_ip: addr, remote_port: count, transport: string, protocol: string,
         username: string, password: string, origin: string, connector_id: string);
     # SMB connection established(?)
