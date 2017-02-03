@@ -134,6 +134,10 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
     Log::write(Dio_blackhole::LOG, rec);
 }
 
+event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
+    log_bro("Got tcp_event!!");
+}
+
 event Broker::incoming_connection_established(peer_name: string) {
     print "Incoming connection established " + peer_name;
     log_bro("Incoming connection established " + peer_name);
