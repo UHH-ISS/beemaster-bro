@@ -8,7 +8,13 @@ flags = broker.AUTO_PUBLISH | broker.AUTO_ADVERTISE | broker.AUTO_ROUTING
 ep = broker.endpoint("talker", flags)
 peering = ep.peer("127.0.0.1", 9990, 1)
 
-sleep(2)
+sleep(.8)
+
+msg = broker.message()
+msg.append(broker.data("dummy"))
+msg.append(broker.data("works better"))
+
+ep.send("test/topic", msg)
 
 print("send multihop test from python side")
 msg = broker.message()

@@ -5,6 +5,7 @@
 #include <broker/message_queue.hh>
 #include <broker/time_point.hh>
 #include <future>
+#include <queue>
 
 
 const char *ep_name = "cpp_peer";
@@ -12,8 +13,25 @@ const char *ep_name = "cpp_peer";
 std::string address = "127.0.0.1";
 const uint16_t port = 9999;
 
-void DoPeer(std::string address, uint16_t port, std::vector<std::string> *topics) {
-    auto endpoint = new broker::endpoint("ACU_TEST",
+class IncomingAlert {
+public:
+    IncomingAlert(const std::string *topic, const broker::message &msg) : topic(topic), message(msg) {}
+private:
+    const std::string *topic;
+    const std::vector<broker::data> message;
+};
+
+class AlertMapper {
+public:
+    IncomingAlert* GetAlert(const std::string *topic, const broker::message &msg) const {
+        return new IncomingAlert(topic, msg);
+    }
+};
+
+void DoPeer(std::string address, uint16_t port, std::vector<std::string> *topics,
+                  AlertMapper *mapper, std::queue<IncomingAlert*> *alertQueue) {
+
+    auto endpoint = new broker::endpoint("acu_test",
                                          broker::AUTO_ROUTING | broker::AUTO_PUBLISH | broker::AUTO_ADVERTISE);
     endpoint->peer(address.c_str(), port);
 
@@ -42,7 +60,11 @@ void DoPeer(std::string address, uint16_t port, std::vector<std::string> *topics
                 auto topic = q->get_topic_prefix();
                 if (q->get_topic_prefix() != "") {
                     for (auto &msg : q->want_pop()) {
-                        std::cout << "Hurra" << std::endl;
+                        std::cout << "blurbs" << std::endl;
+                        auto alert = mapper->GetAlert(new std::string(topic), msg);
+                        if (alert != nullptr) {
+                            alertQueue->emplace(alert);
+                        }
                     }
                 }
             }
@@ -50,11 +72,23 @@ void DoPeer(std::string address, uint16_t port, std::vector<std::string> *topics
     }
 }
 
-void Peer(std::string address, uint16_t port, std::vector<std::string> *topics) {
-    // Fork an asynchronous receiver, return control flow / execution to caller:
-    std::thread(DoPeer, address, port, topics).detach();
-    return;
-}
+class Receiver {
+private:
+    std::string address;
+    uint16_t port;
+    std::vector<std::string> *topics;
+    AlertMapper *mapper;
+
+public:
+    Receiver(std::string address, uint16_t port, std::vector<std::string>* topics, AlertMapper *mapper)
+                : address(address), port(port), topics(topics), mapper(mapper) {};
+
+    void Peer(std::queue<IncomingAlert*> *queue) {
+        // Fork an asynchronous receiver, return control flow / execution to caller:
+        std::thread(DoPeer, address, port, topics, mapper, queue).detach();
+        return;
+    }
+};
 
 int main() {
     broker::init();
@@ -62,8 +96,10 @@ int main() {
     auto topic = "test/topic";
     auto topics = new std::vector<std::string>();
     topics->push_back(topic);
+    Receiver *rec = new Receiver("127.0.0.1", 9999, topics, new AlertMapper());
 
-    Peer(address, port, topics);
+    auto queue = new std::queue<IncomingAlert*>();
+    rec->Peer(queue);
 
     std::cin.get();
 
