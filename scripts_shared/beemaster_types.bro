@@ -4,17 +4,17 @@ module Beemaster;
 @load base/utils/addrs
 
 export {
-  type AlertInfo: record {
-    timestamp: time;
-    source_ip: string;
-    source_port: count;
-    destination_ip: string;
-    destination_port: count;
-  };
+    type AlertInfo: record {
+        timestamp: time;
+        source_ip: string;
+        source_port: count;
+        destination_ip: string;
+        destination_port: count;
+    };
 
-  global connid_to_alertinfo: function(input: conn_id, timestamp: time): AlertInfo;
-  global connection_to_alertinfo: function(input: connection): AlertInfo;
-  global conninfo_to_alertinfo: function(input: Conn::Info): AlertInfo;
+    global connid_to_alertinfo: function(input: conn_id, timestamp: time): AlertInfo;
+    global connection_to_alertinfo: function(input: connection): AlertInfo;
+    global conninfo_to_alertinfo: function(input: Conn::Info): AlertInfo;
 }
 
 function connid_to_alertinfo(input: conn_id, timestamp: time): AlertInfo {
