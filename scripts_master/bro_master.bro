@@ -1,7 +1,7 @@
-@load ./master_log
 @load ./balance_log
 
 @load ./beemaster_events
+@load ./beemaster_log
 
 @load ./dio_access
 @load ./dio_download_complete
@@ -24,7 +24,6 @@ const broker_port: port = 9999/tcp &redef;
 redef Broker::endpoint_name = cat("bro-master-", public_broker_ip, ":", public_broker_port);
 
 global get_protocol: function(proto_str: string) : transport_proto;
-global log_bro: function(msg: string);
 global log_balance: function(connector: string, slave: string);
 global slaves: table[string] of count;
 global connectors: opaque of Broker::Handle;
@@ -33,7 +32,7 @@ global remove_from_balance: function(peer_name: string);
 global rebalance_all: function();
 
 event bro_init() {
-    log_bro("bro_master.bro: bro_init()");
+    Beemaster::log("bro_master.bro: bro_init()");
 
     # Enable broker and listen for incoming slaves/acus
     Broker::enable([$auto_publish=T, $auto_routing=T]);
@@ -43,15 +42,18 @@ event bro_init() {
     Broker::subscribe_to_events_multi("honeypot/dionaea");
 
     # Subscribe to slave events for logging
-    Broker::subscribe_to_events_multi("slave/events");
+    Broker::subscribe_to_events_multi("beemaster/bro/base");
+
+    # Subscribe to tcp events for logging
+    Broker::subscribe_to_events_multi("beemaster/bro/tcp");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
 
-    log_bro("bro_master.bro: bro_init() done");
+    Beemaster::log("bro_master.bro: bro_init() done");
 }
 event bro_done() {
-    log_bro("bro_master.bro: bro_done()");
+    Beemaster::log("bro_master.bro: bro_done()");
 }
 
 event Beemaster::dionaea_access(timestamp: time, local_ip: addr, local_port: count, remote_hostname: string, remote_ip: addr, remote_port: count, transport: string, protocol: string, connector_id: string) {
@@ -135,19 +137,22 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
     Log::write(Dio_blackhole::LOG, rec);
 }
 
-event acu_result(timestamp: time, attack_type: string) {
-    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack_type];
-    Log::write(Acu_result::LOG, rec);
+event Beemaster::lattice_result(timestamp: time, attack_type: string) {
+    local rec: Lattice_result::Info = [$ts=timestamp, $attack=attack_type];
+    Log::write(Lattice_result::LOG, rec);
+}
+event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
+    Beemaster::log("Got tcp_event!!");
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
     print "Incoming connection established " + peer_name;
-    log_bro("Incoming connection established " + peer_name);
+    Beemaster::log("Incoming connection established " + peer_name);
     add_to_balance(peer_name);
 }
 event Broker::incoming_connection_broken(peer_name: string) {
     print "Incoming connection broken for " + peer_name;
-    log_bro("Incoming connection broken for " + peer_name);
+    Beemaster::log("Incoming connection broken for " + peer_name);
     remove_from_balance(peer_name);
 }
 
@@ -175,7 +180,7 @@ function add_to_balance(peer_name: string) {
         slaves[peer_name] = 0;
 
         print "Registered new slave ", peer_name;
-        log_bro("Registered new slave " + peer_name);
+        Beemaster::log("Registered new slave " + peer_name);
         log_balance("", peer_name);
         rebalance_all();
     }
@@ -196,11 +201,11 @@ function add_to_balance(peer_name: string) {
             ++slaves[best_slave];
             print "Registered connector", peer_name, "and balanced to", best_slave;
             log_balance(peer_name, best_slave);
-            log_bro("Registered connector " + peer_name + " and balanced to " + best_slave);
+            Beemaster::log("Registered connector " + peer_name + " and balanced to " + best_slave);
         }
         else {
             print "Could not balance connector", peer_name, "because no slaves are ready";
-            log_bro("Could not balance connector " + peer_name + " because no slaves are ready");
+            Beemaster::log("Could not balance connector " + peer_name + " because no slaves are ready");
             log_balance(peer_name, "");
         }
 
@@ -212,7 +217,7 @@ function remove_from_balance(peer_name: string) {
         delete slaves[peer_name];
 
         print "Unregistered old slave ", peer_name;
-        log_bro("Unregistered old slave " + peer_name + " ...");
+        Beemaster::log("Unregistered old slave " + peer_name + " ...");
 
         rebalance_all();
     }
@@ -223,7 +228,7 @@ function remove_from_balance(peer_name: string) {
             if (connected_slave == "") {
                 # connector was registered, but no slave was there to handle it. If it now goes away, OK!
                 print "Unregistered old connector", peer_name, "no connected slave found";
-                log_bro("Unregistered old connector " + peer_name + " no connected slave found");
+                Beemaster::log("Unregistered old connector " + peer_name + " no connected slave found");
                 return;
             }
             local count_conn = slaves[connected_slave];
@@ -231,12 +236,12 @@ function remove_from_balance(peer_name: string) {
                 slaves[connected_slave] = count_conn - 1;
                 print "Unregistered old connector", peer_name, "from slave", connected_slave;
                 log_balance("", connected_slave);
-                log_bro("Unregistered old connector " + peer_name + " from slave " + connected_slave);
+                Beemaster::log("Unregistered old connector " + peer_name + " from slave " + connected_slave);
             }
         }
         timeout 100msec {
             print "Timeout unregistering connector", peer_name;
-            log_bro("Timeout unregistering connector " + peer_name);
+            Beemaster::log("Timeout unregistering connector " + peer_name);
         }
     }
 }
@@ -261,7 +266,7 @@ function rebalance_all() {
         }
         if (total_slaves == 0) {
             print "No registered slaves found, invalidating all connectors";
-            log_bro("No registered slaves found, invalidating all connectors");
+            Beemaster::log("No registered slaves found, invalidating all connectors");
             local j = 0;
             while (j < i) {
                 local connector = connector_vector[j];
@@ -286,18 +291,13 @@ function rebalance_all() {
                 Broker::insert(connectors, Broker::data(rebalanced_conn), Broker::data(balanced_to));
                 print "Rebalanced connector", rebalanced_conn, "to slave", balanced_to;
                 log_balance(rebalanced_conn, balanced_to);
-                log_bro("Rebalanced connector " + rebalanced_conn + " to slave " + balanced_to);
+                Beemaster::log("Rebalanced connector " + rebalanced_conn + " to slave " + balanced_to);
             }
         }
     }
     timeout 100msec {
-        log_bro("ERROR: Unable to query keys in 'connectors-data-store' within 100ms, timeout");
+        Beemaster::log("ERROR: Unable to query keys in 'connectors-data-store' within 100ms, timeout");
     }
-}
-
-function log_bro(msg:string) {
-    local rec: Brolog::Info = [$msg=msg];
-    Log::write(Brolog::LOG, rec);
 }
 
 function log_balance(connector: string, slave: string) {

@@ -42,6 +42,7 @@ export {
 
     # ## ACU EVENTS ##
 		global acu_result: event (timestamp: time, attack_type: string);
+    global tcp_event: event(rec: AlertInfo, discriminant: count);
 
     # ## MISC EVENTS ##
 

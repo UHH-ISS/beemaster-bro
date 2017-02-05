@@ -1,4 +1,4 @@
-module Acu_result;
+module Lattice_result;
 
 export{
   redef enum Log::ID += { LOG };
@@ -11,5 +11,5 @@ export{
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Acu_result::LOG, [$columns=Info, $path="acu_result"]);
+  Log::create_stream(Lattice_result::LOG, [$columns=Info, $path="lattice_result"]);
 }
