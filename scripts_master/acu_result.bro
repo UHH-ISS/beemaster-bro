@@ -11,5 +11,5 @@ export{
 }
 
 event bro_init() &priority=5 {
-  Log::create_stream(Acu_result::LOG, [$columns=Info, $path="master"]);
+  Log::create_stream(Acu_result::LOG, [$columns=Info, $path="acu_result"]);
 }
