@@ -49,8 +49,8 @@ Falls ```python``` standardmäßig auf ```python2``` gesetzt ist, kann der confi
 In Beemaster wird Bro (Master und Slave) in einem Container Setup genutzt. Die Lib-Versionen sollten nicht verändert werden, Libcaf funktioniert nur mit v <= 0.14.5
 
 Jeweils für Bro Master und Slave gibt es fertige Startskripte um einzelne Container zu starten.
-- Bro Master [start.sh](iss/mp-ids-bro/blob/master/start.sh)
-- Bro Slave [start-slave.sh](iss/mp-ids-bro/blob/master/start-slave.sh)
+- Bro Master [start.sh](start.sh)
+- Bro Slave [start-slave.sh](start-slave.sh)
 
 ##### Bro Configuration
 
@@ -83,14 +83,14 @@ jemalloc:          false
 ================================================================
 ~~~~
 
-#### Manueller Build
+### Manueller Build
 
-Es muss zur Build-Zeit des Containers entschieden werden, ob es sich um einen Master oder einen Slave handelt. Dafür muss ein Docker `build-arg` übergeben werden. Bsp: `docker build . -t master --build-arg PURPOSE=master`. Durch dieses Build-Argument werden unterschiedliche Skripte in den Container gelegt.
+Es muss zur Build-Zeit des Containers entschieden werden, ob es sich um einen Master oder einen Slave Container handeln soll. Dafür muss ein Docker `build-arg` übergeben werden. Bsp: `docker build . -t master --build-arg PURPOSE=master`. Durch dieses Build-Argument werden unterschiedliche Skripte in den Container gelegt.
 
 
-#### Manueller Start
+### Manueller Start
 
-Beim Start des Containers müssen ebenfalls Umgebungsvariablen übergeben werden. Diese Variablen sind wichtig für das Routing im Beemaster Netzwerk:
+Beim Start des Containers müssen Umgebungsvariablen übergeben werden. Diese Variablen sind zwingend erforderlich für das Routing im Beemaster Netzwerk:
 
 | ENV VAR            | Beispiel   | Details
 | ------------------ |:----------:| -------
@@ -100,3 +100,13 @@ Beim Start des Containers müssen ebenfalls Umgebungsvariablen übergeben werden
 | MASTER_PUBLIC_PORT | 9999       | Der Port unter dem der Master im Netzwerk erreichbar ist. Siehe oben.
 
 Eine beispielhafte Anwendung dieser Docker Umgebungsvariablen ist in den jeweiligen Startskripten für Master und Slave zu sehen.
+
+
+## Docker Compose Cluster
+
+In diesem Repository befindet sich eine `docker-compose` yaml Datei: [docker-compose.yml](docker-compose.yml). Die Datei ist für den Start eines kleinen Bro Clusters, bestehend aus einem Master und zwei Slaves. Dabei wird die öffentliche IP des ISS-Projekt Servers (`134.100.28.31`) verwendet. Sowohl Slaves als auch Master verwenden diese IP für das Routing im öffentlichen Netzwerk.
+
+##### Nutzung des Compose Clusters
+
+- Start: `docker-compose up --build -d`: Baut und startet das Cluster, anschließender Fork als Daemon
+- Stop: `docker-compose down`: Stopt und zerstört die Container
