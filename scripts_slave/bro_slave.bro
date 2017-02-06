@@ -1,6 +1,9 @@
 @load ./beemaster_types
 @load ./beemaster_log
 @load ./beemaster_events
+@load ./lattice_types
+@load ./lattice_log
+@load ./lattice_events
 
 @load base/bif/plugins/Bro_TCP.events.bif
 @load base/protocols/conn/main
@@ -21,6 +24,8 @@ global base_events: set[string] = { "Beemaster::log_conn" };
 
 global tcp_events: set[string] = { "Beemaster::tcp_event" };
 
+global lattice_events: set[string] = { "Lattice::lattice_event"};
+
 event bro_init() {
     Beemaster::log("bro_slave.bro: bro_init()");
 
@@ -36,6 +41,9 @@ event bro_init() {
 
     # Publish our tcp events
     Broker::register_broker_events("beemaster/bro/tcp", tcp_events);
+		
+		# Publish our lattice_event
+		Broker::register_broker_events("beemaster/bro/lattice", lattice_events);
 
     Beemaster::log("bro_slave.bro: bro_init() done");
 }
@@ -69,4 +77,9 @@ event Conn::log_conn(rec: Conn::Info) {
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
     Beemaster::log("connection_SYN_packet on slave");
     event Beemaster::tcp_event(Beemaster::connection_to_alertinfo(c), 1);
+}
+
+event connection_UDP_packet(c: connection, pkt: UDP_packet) {	
+		Lattice::log("conection_UDP_packet on slave");
+		event Lattice::lattice_event(Lattice::connection_to_alertinfo(c), 1);
 }

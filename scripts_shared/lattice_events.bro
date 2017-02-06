@@ -1,6 +1,6 @@
-module Beemaster;
+module Lattice;
 
-@load ./beemaster_types
+@load ./lattice_types
 
 export {
     # ## DIONAEA EVENTS ##
@@ -42,7 +42,7 @@ export {
 
     # ## ACU EVENTS ##
 		global acu_result: event (timestamp: time, attack_type: string);
-    global tcp_event: event(rec: AlertInfo, discriminant: count);
+    #global tcp_event: event(rec: AlertInfo, discriminant: count);
 		global lattice_event: event(rec: AlertInfo, discriminant: count);
 
     # ## MISC EVENTS ##

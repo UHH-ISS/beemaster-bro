@@ -47,6 +47,9 @@ event bro_init() {
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
 
+		# Subscribe to lattice events for logging
+		Broker::subscribe_to_events_multi("beemaster/bro/lattice");
+
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
 
@@ -143,6 +146,10 @@ event acu_result(timestamp: time, attack_type: string) {
 }
 event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
     Beemaster::log("Got tcp_event!!");
+}
+
+event Beemaster::lattice_event(rec: Beemaster::AlertInfo, discriminant: count) {
+		Beemaster::log("Got lattice_event!!");
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
