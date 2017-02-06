@@ -110,3 +110,5 @@ In diesem Repository befindet sich eine `docker-compose` yaml Datei: [docker-com
 
 - Start: `docker-compose up --build -d`: Baut und startet das Cluster, anschließender Fork als Daemon
 - Stop: `docker-compose down`: Stopt und zerstört die Container
+
+Über Docker Mountvolumes werden Ordner unter `/var/beemaster` des Hostsystems in den Containern für Master und Slave verfügbar gemacht. So können die geschriebenen Logs auch außerhalb der Container zugegriffen werden -- zum Beispiel der lesende Zugriff des CIMs.
