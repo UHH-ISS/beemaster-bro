@@ -137,9 +137,9 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
     Log::write(Dio_blackhole::LOG, rec);
 }
 
-event Beemaster::lattice_result(timestamp: time, attack_type: string) {
-    local rec: Lattice_result::Info = [$ts=timestamp, $attack=attack_type];
-    Log::write(Lattice_result::LOG, rec);
+event acu_result(timestamp: time, attack_type: string) {
+    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack_type];
+    Log::write(Acu_result::LOG, rec);
 }
 event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
     Beemaster::log("Got tcp_event!!");
