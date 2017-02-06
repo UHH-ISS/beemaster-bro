@@ -46,6 +46,8 @@ event bro_init() {
 
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
+		
+		Broker::subscribe_to_events_multi("acu_result");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
@@ -137,7 +139,7 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
     Log::write(Dio_blackhole::LOG, rec);
 }
 
-event acu_result(timestamp: time, attack_type: string) {
+event Beemaster::acu_result(timestamp: time, attack_type: string) {
     local rec: Acu_result::Info = [$ts=timestamp, $attack=attack_type];
     Log::write(Acu_result::LOG, rec);
 }
