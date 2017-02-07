@@ -40,8 +40,9 @@ export {
         remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, 
         length: count, origin: string, connector_id: string);
 
-    # ## ACU EVENTS ##
-		global acu_result: event (timestamp: time, attack_type: string);
+    # ## ACU EVENTS #
+    global lattice_result: event(timestamp: time, attack: string);
+    global acu_result: event(timestamp: time, attack: string);
     global tcp_event: event(rec: AlertInfo, discriminant: count);
 		global lattice_event: event(rec: AlertInfo, discriminant: count);
 
