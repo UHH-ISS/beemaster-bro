@@ -22,7 +22,7 @@ global base_events: set[string] = { "Beemaster::log_conn" };
 
 global tcp_events: set[string] = { "Beemaster::tcp_event" };
 
-global udp_events: set[string] = { "Beemaster::udp_event"};
+global lattice_events: set[string] = { "Beemaster::lattice_event"};
 
 event bro_init() {
     Beemaster::log("bro_slave.bro: bro_init()");
@@ -40,9 +40,9 @@ event bro_init() {
     # Publish our tcp events
     Broker::register_broker_events("beemaster/bro/tcp", tcp_events);
 		
-		# Publish our udp_events
-		Broker::register_broker_events("beemaster/bro/udp", udp_events);
-
+		# Publish our lattice_events
+		Broker::register_broker_events("beemaster/bro/lattice", lattice_events);
+    
     Beemaster::log("bro_slave.bro: bro_init() done");
 }
 
@@ -75,9 +75,10 @@ event Conn::log_conn(rec: Conn::Info) {
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
     Beemaster::log("connection_SYN_packet on slave");
     event Beemaster::tcp_event(Beemaster::connection_to_alertinfo(c), 1);
+		event Beemaster::lattice_event(Beemaster::connection_to_latticeinfo(c, "TCP"), 1);
 }
 
 event udp_request(c: connection) {	
 		Beemaster::log("conection_UDP_packet on slave");
-		event Beemaster::udp_event(Beemaster::connection_to_latticeinfo(c), 1);
+		event Beemaster::lattice_event(Beemaster::connection_to_latticeinfo(c, "UDP"), 1);
 }
