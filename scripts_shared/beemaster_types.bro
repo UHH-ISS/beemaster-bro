@@ -25,7 +25,7 @@ export {
     global conninfo_to_alertinfo: function(input: Conn::Info): AlertInfo;
     global connid_to_latticeinfo: function(input: conn_id, timestamp: time, proto : string): LatticeInfo;
 		global connection_to_latticeinfo: function(input: connection, proto : string) : LatticeInfo;
-    global conninfo_to_latticeinfo: function(input: Conn::Info): LatticeInfo;
+    global conninfo_to_latticeinfo: function(input: Conn::Info, proto: string): LatticeInfo;
 }
 
 function connid_to_alertinfo(input: conn_id, timestamp: time): AlertInfo {
@@ -48,7 +48,7 @@ function conninfo_to_alertinfo(input: Conn::Info): AlertInfo {
 # create info record for lattice acu
 function connection_to_latticeinfo(input: connection, proto : string): LatticeInfo {
     if (input?$conn) {
-        return conninfo_to_latticeinfo(input$conn);
+        return conninfo_to_latticeinfo(input$conn, proto);
     }
     return connid_to_latticeinfo(input$id, input$start_time, proto);
 }

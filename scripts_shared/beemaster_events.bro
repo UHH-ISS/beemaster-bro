@@ -44,7 +44,7 @@ export {
     global lattice_result: event(timestamp: time, attack: string);
     global acu_result: event(timestamp: time, attack: string);
     global tcp_event: event(rec: AlertInfo, discriminant: count);
-		global lattice_event: event(rec: LatticeInfo, discriminant: count, proto: string);
+		global lattice_event: event(rec: LatticeInfo, discriminant: count);
 
     # ## MISC EVENTS ##
 
