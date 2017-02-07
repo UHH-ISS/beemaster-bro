@@ -139,13 +139,20 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
     Log::write(Dio_blackhole::LOG, rec);
 }
 
+event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
+    Beemaster::log("Got tcp_event!!");
+}
+
 event Beemaster::acu_result(timestamp: time, attack: string) {
     Beemaster::log("Got acu_result!");
     local rec: Beemaster::AcuResultInfo = [$ts=timestamp, $attack=attack];
     Log::write(Beemaster::ACU_LOG, rec);
 }
-event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
-    Beemaster::log("Got tcp_event!!");
+
+event Beemaster::lattice_result(timestamp: time, attack: string) {
+    Beemaster::log("Got lattice_result!");
+    local rec: Beemaster::AcuResultInfo = [$ts=timestamp, $attack=attack];
+    Log::write(Beemaster::ACU_LOG, rec);
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
