@@ -47,7 +47,7 @@ event bro_init() {
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
 		
-		Broker::subscribe_to_events_multi("acu_result");
+		Broker::subscribe_to_events_multi("beemaster/acu/acu_result");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
@@ -138,14 +138,15 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
 
     Log::write(Dio_blackhole::LOG, rec);
 }
-event Beemaster::test(timestamp: time, attack_type: string) {
-    Beemaster::log("Got test!");
-    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack_type];
+event Beemaster::lattice_result(timestamp: time, attack: string) {
+    Beemaster::log("Got lattice_result!");
+    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack];
     Log::write(Acu_result::LOG, rec);
 }
-event Beemaster::acu_result(timestamp: time, attack_type: string) {
-    Beemaster::log("Got acu_result");
-    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack_type];
+# TODO: Adjust to changes in fw
+event Beemaster::acu_result(timestamp: time, attack: string) {
+    Beemaster::log("Got acu_result!");
+    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack];
     Log::write(Acu_result::LOG, rec);
 }
 event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
