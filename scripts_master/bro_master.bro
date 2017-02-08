@@ -1,4 +1,4 @@
-@load ./balance_log
+@load ./balance
 
 @load ./beemaster_events
 @load ./beemaster_log
@@ -127,7 +127,7 @@ event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr
     Log::write(Dio_smb_request::LOG, rec);
 }
 
-event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
+event Beemaster::dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
 
@@ -296,6 +296,6 @@ function rebalance_all() {
 }
 
 function log_balance(connector: string, slave: string) {
-    local rec: BalanceLog::Info = [$connector=connector, $slave=slave];
-    Log::write(BalanceLog::LOG, rec);
+    local rec: Balance::Info = [$connector=connector, $slave=slave];
+    Log::write(Balance::LOG, rec);
 }
