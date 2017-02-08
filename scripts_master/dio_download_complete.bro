@@ -3,18 +3,19 @@ module Dio_download_complete;
 export {
   redef enum Log::ID += { LOG };
   redef LogAscii::empty_field = "EMPTY";
-  
+
   type Info: record {
     ts: time &log;
     id: string &log;
     local_ip: addr &log;
     local_port: port &log;
-    remote_ip: addr &log; 
+    remote_ip: addr &log;
     remote_port: port &log;
     transport: string &log;
     protocol: string &log;
     url: string &log;
     md5hash: string &log;
+    detection_rate: string &log &optional;
     filelocation: string &log;
     origin: string &log;
     connector_id: string &log;
