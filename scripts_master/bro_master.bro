@@ -11,8 +11,8 @@
 @load ./dio_login
 @load ./dio_smb_bind
 @load ./dio_smb_request
-@load ./dio_blackhole.bro
-@load ./acu_result.bro
+@load ./dio_blackhole
+@load ./acu_result
 
 redef exit_only_after_terminate = T;
 # the port and IP that are externally routable for this master
@@ -46,8 +46,8 @@ event bro_init() {
 
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
-		
-		Broker::subscribe_to_events_multi("beemaster/acu/acu_result");
+
+    Broker::subscribe_to_events_multi("beemaster/acu/acu_result");
 
 		# Subscribe to lattice events for logging
 		Broker::subscribe_to_events_multi("beemaster/bro/lattice");
@@ -141,19 +141,21 @@ event dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port:
 
     Log::write(Dio_blackhole::LOG, rec);
 }
-event Beemaster::lattice_result(timestamp: time, attack: string) {
-    Beemaster::log("Got lattice_result!");
-    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack];
-    Log::write(Acu_result::LOG, rec);
-}
-# TODO: Adjust to changes in fw
-event Beemaster::acu_result(timestamp: time, attack: string) {
-    Beemaster::log("Got acu_result!");
-    local rec: Acu_result::Info = [$ts=timestamp, $attack=attack];
-    Log::write(Acu_result::LOG, rec);
-}
+
 event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
     Beemaster::log("Got tcp_event!!");
+}
+
+event Beemaster::acu_result(timestamp: time, attack: string) {
+    Beemaster::log("Got acu_result!");
+    local rec: Beemaster::AcuResultInfo = [$ts=timestamp, $attack=attack];
+    Log::write(Beemaster::ACU_LOG, rec);
+}
+
+event Beemaster::lattice_result(timestamp: time, attack: string) {
+    Beemaster::log("Got lattice_result!");
+    local rec: Beemaster::AcuResultInfo = [$ts=timestamp, $attack=attack];
+    Log::write(Beemaster::ACU_LOG, rec);
 }
 event Beemaster::lattice_event(rec: Beemaster::LatticeInfo, discriminant: count) {
     Beemaster::log("Got lattice_event!");
