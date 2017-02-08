@@ -16,6 +16,5 @@ event bro_init() &priority=5 {
 }
 
 function log(msg: string) {
-    local rec: Info = [$msg=msg];
-    Log::write(LOG, rec);
+    Log::write(LOG, [$msg=msg]);
 }
