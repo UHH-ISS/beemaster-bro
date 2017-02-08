@@ -42,11 +42,11 @@ export {
 
     # ## ACU EVENTS ##
     global tcp_event: event(rec: AlertInfo, discriminant: count);
-		global lattice_event: event(rec: LatticeInfo, discriminant: count);
+    global lattice_event: event(rec: AlertInfo, protocol: string);
 
     # ## ACU METAALERTS ##
-    global acu_result: event(timestamp: time, attack: string);
-    global lattice_result: event(timestamp: time, attack: string);
+    global acu_meta_alert: event(timestamp: time, attack: string);
+    global lattice_meta_alert: event(timestamp: time, attack: string);
 
     # ## MISC EVENTS ##
 

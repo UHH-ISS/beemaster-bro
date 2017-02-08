@@ -8,13 +8,12 @@
 
 redef exit_only_after_terminate = T;
 
+# Broker setup
 # the ports and IPs that are externally routable for a master and this slave
 const slave_broker_port: string = getenv("SLAVE_PUBLIC_PORT") &redef;
 const slave_broker_ip: string = getenv("SLAVE_PUBLIC_IP") &redef;
 const master_broker_port: port = to_port(cat(getenv("MASTER_PUBLIC_PORT"), "/tcp")) &redef;
 const master_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
-
-# the port that is internally used (inside the container) to listen to
 const broker_port: port = 9999/tcp &redef;
 redef Broker::endpoint_name = cat("bro-slave-", slave_broker_ip, ":", slave_broker_port);
 
@@ -39,10 +38,10 @@ event bro_init() {
 
     # Publish our tcp events
     Broker::register_broker_events("beemaster/bro/tcp", tcp_events);
-		
-		# Publish our lattice_events
-		Broker::register_broker_events("beemaster/bro/lattice", lattice_events);
-    
+
+    # Publish our lattice_events
+    Broker::register_broker_events("beemaster/bro/lattice", lattice_events);
+
     Beemaster::log("bro_slave.bro: bro_init() done");
 }
 
@@ -75,10 +74,10 @@ event Conn::log_conn(rec: Conn::Info) {
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
     Beemaster::log("connection_SYN_packet on slave");
     event Beemaster::tcp_event(Beemaster::connection_to_alertinfo(c), 1);
-		event Beemaster::lattice_event(Beemaster::connection_to_latticeinfo(c, "TCP"), 1);
+    event Beemaster::lattice_event(Beemaster::connection_to_alertinfo(c), "TCP");
 }
 
-event udp_request(c: connection) {	
-		Beemaster::log("conection_UDP_packet on slave");
-		event Beemaster::lattice_event(Beemaster::connection_to_latticeinfo(c, "UDP"), 1);
+event udp_request(c: connection) {
+    Beemaster::log("udp_request on slave");
+    event Beemaster::lattice_event(Beemaster::connection_to_alertinfo(c), "UDP");
 }
