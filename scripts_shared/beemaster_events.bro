@@ -46,10 +46,8 @@ export {
 
     # ## ACU METAALERTS ##
     global acu_meta_alert: event(timestamp: time, attack: string);
-    global lattice_meta_alert: event(timestamp: time, attack: string);
-
-    # ## ACU METAALERTS ##
     global portscan_meta_alert: event(timestamp: time, attack: string, ips: vector of string);
+    global lattice_meta_alert: event(timestamp: time, attack: string);
 
     # ## MISC EVENTS ##
 
