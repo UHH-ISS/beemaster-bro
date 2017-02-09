@@ -152,14 +152,24 @@ event Beemaster::portscan_meta_alert(timestamp: time, attack: string, ips: vecto
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
-    print "Incoming connection established " + peer_name;
-    Beemaster::log("Incoming connection established " + peer_name);
+    local msg: string = "Incoming_connection_established " + peer_name;
+    Beemaster::log(msg);
+    # Add new client to balance
     add_to_balance(peer_name);
 }
 event Broker::incoming_connection_broken(peer_name: string) {
-    print "Incoming connection broken for " + peer_name;
-    Beemaster::log("Incoming connection broken for " + peer_name);
+    local msg: string = "Incoming_connection_broken " + peer_name;
+    Beemaster::log(msg);
+    # Remove disconnected client from balance
     remove_from_balance(peer_name);
+}
+event Broker::outgoing_connection_established(peer_address: string, peer_port: port, peer_name: string) {
+    local msg: string = "Outgoing connection established to: " + peer_address;
+    Beemaster::log(msg);
+}
+event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, peer_name: string) {
+    local msg: string = "Outgoing connection broken with: " + peer_address;
+    Beemaster::log(msg);
 }
 
 # Log slave log_conn events to the master's conn.log
