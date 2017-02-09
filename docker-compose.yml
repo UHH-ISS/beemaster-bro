@@ -3,7 +3,7 @@ version: '2'
 services:
   bro-master:
     build:
-      context: ./mp-ids-bro
+      context: .
       args:
         PURPOSE: master
     environment:
@@ -15,7 +15,7 @@ services:
       - /var/beemaster/log/bro-master:/usr/local/bro/logs
   bro-slave-1:
     build:
-      context: ./mp-ids-bro
+      context: .
       args:
         PURPOSE: slave
     environment:
@@ -31,7 +31,7 @@ services:
       - bro-master
   bro-slave-2:
     build:
-      context: ./mp-ids-bro
+      context: .
       args:
         PURPOSE: slave
     environment:
