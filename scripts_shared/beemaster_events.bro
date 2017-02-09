@@ -43,6 +43,9 @@ export {
     # ## ACU EVENTS ##
     global tcp_event: event(rec: AlertInfo, discriminant: count);
 
+    # ## ACU METAALERTS ##
+    global portscan_meta_alert: event(timestamp: time, attack: string, ips: vector of string);
+
     # ## MISC EVENTS ##
 
     # Conn::log_conn forwarding
