@@ -60,6 +60,7 @@ export {
       protocol: string &log;
       url: string &log;
       md5hash: string &log;
+      detection_rate: string &log &optional;
       filelocation: string &log;
       origin: string &log;
       connector_id: string &log;
