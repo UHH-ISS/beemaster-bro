@@ -1,6 +1,7 @@
 @load ./beemaster_events
 @load ./beemaster_log
-@load ./beemaster_logwriter
+@load ./beemaster_util
+@load ./log
 
 redef exit_only_after_terminate = T;
 # the port and IP that are externally routable for this master
