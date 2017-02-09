@@ -67,6 +67,5 @@ event Conn::log_conn(rec: Conn::Info) {
 }
 
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
-    Beemaster::log("connection_SYN_packet on slave");
     event Beemaster::tcp_event(Beemaster::connection_to_alertinfo(c), 1);
 }
