@@ -49,7 +49,7 @@ event bro_init() {
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
 
     # Subscribe to acu alerts
-    Broker::subscribe_to_events_multi("acu/alert");
+    Broker::subscribe_to_events_multi("beemaster/acu/alert");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
