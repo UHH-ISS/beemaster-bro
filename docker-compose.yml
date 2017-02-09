@@ -4,7 +4,7 @@ version: '2'
 services:
   bro-master:
     build:
-      context: ./mp-ids-bro
+      context: .
       args:
         PURPOSE: master
     environment:
@@ -17,7 +17,7 @@ services:
 
   bro-slave-1:
     build:
-      context: ./mp-ids-bro
+      context: .
       args:
         PURPOSE: slave
     environment:
@@ -34,7 +34,7 @@ services:
 
   bro-slave-2:
     build:
-      context: ./mp-ids-bro
+      context: .
       args:
         PURPOSE: slave
     environment:
