@@ -20,7 +20,6 @@ global connectors: opaque of Broker::Handle;
 global add_to_balance: function(peer_name: string);
 global remove_from_balance: function(peer_name: string);
 global rebalance_all: function();
-global log_balance: function(connector: string, slave: string);
 
 event bro_init() {
     Beemaster::log("bro_master.bro: bro_init()");
