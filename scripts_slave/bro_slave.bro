@@ -70,7 +70,7 @@ event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, 
 # forwarding when some local connection is beeing logged. Throws an explicit beemaster event to forward.
 event Conn::log_conn(rec: Conn::Info) {
     event Beemaster::log_conn(rec);
-    event Beemaster::lattice_event(Beemaster::conninfo_to_alertinfo(c), Beemaster::proto_to_string(rec$proto)();
+    event Beemaster::lattice_event(Beemaster::conninfo_to_alertinfo(rec), Beemaster::proto_to_string(rec$proto)();
 }
 
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
