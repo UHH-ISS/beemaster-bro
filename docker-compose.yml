@@ -1,6 +1,5 @@
 version: '2'
 # Build args are passed to the Dockerfile to determine the container's purpose.
-
 services:
   bro-master:
     build:
@@ -14,7 +13,6 @@ services:
       - 9999:9999
     volumes:
       - /var/beemaster/log/bro-master:/usr/local/bro/logs
-
   bro-slave-1:
     build:
       context: .
@@ -31,7 +29,6 @@ services:
       - /var/beemaster/log/bro-slave-1:/usr/local/bro/logs
     depends_on:
       - bro-master
-
   bro-slave-2:
     build:
       context: .

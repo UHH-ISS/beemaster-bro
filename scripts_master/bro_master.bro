@@ -13,6 +13,7 @@ const broker_port: port = 9999/tcp &redef;
 redef Broker::endpoint_name = cat("bro-master-", public_broker_ip, ":", public_broker_port);
 
 global log_balance: function(connector: string, slave: string);
+global mhr_lookup: function(hash: string) : string;
 global slaves: table[string] of count;
 global connectors: opaque of Broker::Handle;
 global add_to_balance: function(peer_name: string);
@@ -59,10 +60,38 @@ event Beemaster::dionaea_access(timestamp: time, local_ip: addr, local_port: cou
 event Beemaster::dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
+    local detection_rate: string;
+    local rec: Beemaster::DioDownloadCompleteInfo;
+    local hash_domain = fmt("%s.malware.hash.cymru.com", md5hash);
 
-    local rec: Beemaster::DioDownloadCompleteInfo = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $url=url, $md5hash=md5hash, $filelocation=filelocation, $origin=origin, $connector_id=connector_id];
+    when ( local MHR_result = lookup_hostname_txt(hash_domain) ) {
+        # Data is returned as "<timestampLastSeen> <detectionRate>"
+        local MHR_answer = split_string1(MHR_result, / /);
+        if ( |MHR_answer| == 2 ) {
+            Beemaster::log("MHR lookup returned " + MHR_answer[0] + " " + MHR_answer[1]);
+            detection_rate = MHR_answer[1];
 
-    Log::write(Beemaster::DIO_DOWNLOAD_COMPLETE_LOG, rec);
+            rec = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $url=url, $md5hash=md5hash, $detection_rate=detection_rate, $filelocation=filelocation, $origin=origin, $connector_id=connector_id];
+
+            Log::write(Beemaster::DIO_DOWNLOAD_COMPLETE_LOG, rec);
+        }
+        else {
+            Beemaster::log("MHR lookup for " + md5hash + " did not return any results");
+            detection_rate = "NO_DATA";
+
+            rec = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $url=url, $md5hash=md5hash, $detection_rate=detection_rate, $filelocation=filelocation, $origin=origin, $connector_id=connector_id];
+
+            Log::write(Beemaster::DIO_DOWNLOAD_COMPLETE_LOG, rec);
+      }
+    }
+    timeout 1sec {
+        Beemaster::log("ERROR: Unable to query " + hash_domain + " within 1s, timeout");
+        detection_rate = "TIMEOUT";
+
+        rec = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $url=url, $md5hash=md5hash, $detection_rate=detection_rate, $filelocation=filelocation, $origin=origin, $connector_id=connector_id];
+
+        Log::write(Beemaster::DIO_DOWNLOAD_COMPLETE_LOG, rec);
+    }
 }
 
 event Beemaster::dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string) {
