@@ -73,6 +73,10 @@ event Conn::log_conn(rec: Conn::Info) {
     event Beemaster::lattice_event(Beemaster::conninfo_to_alertinfo(rec), Beemaster::proto_to_string(rec$proto));
 }
 
+event connection_external(c: connection, tag: string) {
+    event Beemaster::lattice_event(Beemaster::connection_to_alertinfo(c), Beemaster::proto_to_string(c$conn$proto));
+}
+
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
     event Beemaster::tcp_event(Beemaster::connection_to_alertinfo(c), 1);
 }
