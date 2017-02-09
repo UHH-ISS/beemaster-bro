@@ -1,9 +1,10 @@
-@load ./balance
-
 @load ./beemaster_events
 @load ./beemaster_log
 
 @load ./acu_result
+@load ./balance
+@load ./portscan_alert
+
 @load ./dio_access
 @load ./dio_blackhole
 @load ./dio_download_complete
@@ -49,11 +50,11 @@ event bro_init() {
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
 
-    # Subscribe to acu result (aka meta alerts)
-    Broker::subscribe_to_events_multi("beemaster/acu/acu_result");
-
     # Subscribe to lattice events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/lattice");
+
+    # Subscribe to acu alerts
+    Broker::subscribe_to_events_multi("beemaster/acu/alert");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
@@ -172,15 +173,13 @@ event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr
     Log::write(Dio_smb_request::LOG, rec);
 }
 
-<<<<<<< HEAD
 event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
     Beemaster::log("Got tcp_event!!");
 }
-=======
+
 event Beemaster::dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
     local lport: port = count_to_port(local_port, get_protocol(transport));
     local rport: port = count_to_port(remote_port, get_protocol(transport));
->>>>>>> master
 
 event Beemaster::lattice_event(rec: Beemaster::AlertInfo, protocol: string) {
     Beemaster::log("Got lattice_event!");
@@ -198,16 +197,22 @@ event Beemaster::lattice_meta_alert(timestamp: time, attack: string) {
     Log::write(Beemaster::ACU_LOG, rec);
 }
 
+event Beemaster::portscan_meta_alert(timestamp: time, attack: string, ips: vector of string) {
+    Beemaster::log("Got portscan_meta_alert!");
+    local rec: Beemaster::PortscanAlertInfo = [$ts=timestamp, $attack=attack, $ips=ips];
+    Log::write(Beemaster::PORTSCAN_LOG, rec);
+}
+
 event Broker::incoming_connection_established(peer_name: string) {
     local msg: string = "Incoming_connection_established " + peer_name;
     Beemaster::log(msg);
-    # Balance incoming client
+    # Add new client to balance
     add_to_balance(peer_name);
 }
 event Broker::incoming_connection_broken(peer_name: string) {
     local msg: string = "Incoming_connection_broken " + peer_name;
     Beemaster::log(msg);
-    # Rebalance removing client
+    # Remove disconnected client from balance
     remove_from_balance(peer_name);
 }
 event Broker::outgoing_connection_established(peer_address: string, peer_port: port, peer_name: string) {
