@@ -1,6 +1,7 @@
+@load ./beemaster_events
 @load ./beemaster_types
 @load ./beemaster_log
-@load ./beemaster_events
+@load ./beemaster_util
 
 @load base/bif/plugins/Bro_TCP.events.bif
 @load base/bif/plugins/Bro_UDP.events.bif
@@ -69,14 +70,9 @@ event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, 
 # forwarding when some local connection is beeing logged. Throws an explicit beemaster event to forward.
 event Conn::log_conn(rec: Conn::Info) {
     event Beemaster::log_conn(rec);
+    event Beemaster::lattice_event(Beemaster::conninfo_to_alertinfo(c), Beemaster::proto_to_string(rec$proto)();
 }
 
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {
     event Beemaster::tcp_event(Beemaster::connection_to_alertinfo(c), 1);
-    event Beemaster::lattice_event(Beemaster::connection_to_alertinfo(c), "TCP");
-}
-
-event udp_request(c: connection) {
-    Beemaster::log("udp_request on slave");
-    event Beemaster::lattice_event(Beemaster::connection_to_alertinfo(c), "UDP");
 }
