@@ -1,7 +1,9 @@
-@load ./balance
-
 @load ./beemaster_events
 @load ./beemaster_log
+
+@load ./balance
+
+@load ./portscan_alert
 
 @load ./dio_access
 @load ./dio_download_complete
@@ -45,6 +47,9 @@ event bro_init() {
 
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
+
+    # Subscribe to acu alerts
+    Broker::subscribe_to_events_multi("acu/alert");
 
     ## create a distributed datastore for the connector to link against:
     connectors = Broker::create_master("connectors");
@@ -138,6 +143,12 @@ event Beemaster::dionaea_blackhole(timestamp: time, id: string, local_ip: addr, 
 
 event Beemaster::tcp_event(rec: Beemaster::AlertInfo, discriminant: count) {
     Beemaster::log("Got tcp_event!!");
+}
+
+event Beemaster::portscan_meta_alert(timestamp: time, attack: string, ips: vector of string) {
+    Beemaster::log("Got portscan_meta_alert!");
+    local rec: Beemaster::PortscanAlertInfo = [$ts=timestamp, $attack=attack, $ips=ips];
+    Log::write(Beemaster::PORTSCAN_LOG, rec);
 }
 
 event Broker::incoming_connection_established(peer_name: string) {
