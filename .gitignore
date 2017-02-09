@@ -1,0 +1,3 @@
+# Ignore bro stuff
+.state/
+reporter.log
