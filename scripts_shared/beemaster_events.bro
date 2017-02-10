@@ -36,15 +36,18 @@ export {
         remote_ip: addr, remote_port: count, transport: string, protocol: string,
         opnum: count, uuid: string, origin: string, connector_id: string);
     # Blackhole service accessed
-    global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count, 
-        remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, 
+    global dionaea_blackhole: event(timestamp: time, id: string, local_ip: addr, local_port: count,
+        remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string,
         length: count, origin: string, connector_id: string);
 
     # ## ACU EVENTS ##
     global tcp_event: event(rec: AlertInfo, discriminant: count);
+    global lattice_event: event(rec: AlertInfo, protocol: string);
 
     # ## ACU METAALERTS ##
+    global acu_meta_alert: event(timestamp: time, attack: string);
     global portscan_meta_alert: event(timestamp: time, attack: string, ips: vector of string);
+    global lattice_meta_alert: event(timestamp: time, attack: string);
 
     # ## MISC EVENTS ##
 

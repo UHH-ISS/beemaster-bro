@@ -1,25 +1,28 @@
+@load ./beemaster_events
 @load ./beemaster_types
 @load ./beemaster_log
-@load ./beemaster_events
+@load ./beemaster_util
 
 @load base/bif/plugins/Bro_TCP.events.bif
+@load base/bif/plugins/Bro_UDP.events.bif
 @load base/protocols/conn/main
 
 redef exit_only_after_terminate = T;
 
+# Broker setup
 # the ports and IPs that are externally routable for a master and this slave
 const slave_broker_port: string = getenv("SLAVE_PUBLIC_PORT") &redef;
 const slave_broker_ip: string = getenv("SLAVE_PUBLIC_IP") &redef;
 const master_broker_port: port = to_port(cat(getenv("MASTER_PUBLIC_PORT"), "/tcp")) &redef;
 const master_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
-
-# the port that is internally used (inside the container) to listen to
 const broker_port: port = 9999/tcp &redef;
 redef Broker::endpoint_name = cat("bro-slave-", slave_broker_ip, ":", slave_broker_port);
 
 global base_events: set[string] = { "Beemaster::log_conn" };
 
 global tcp_events: set[string] = { "Beemaster::tcp_event" };
+
+global lattice_events: set[string] = { "Beemaster::lattice_event"};
 
 event bro_init() {
     Beemaster::log("bro_slave.bro: bro_init()");
@@ -36,6 +39,9 @@ event bro_init() {
 
     # Publish our tcp events
     Broker::register_broker_events("beemaster/bro/tcp", tcp_events);
+
+    # Publish our lattice_events
+    Broker::register_broker_events("beemaster/bro/lattice", lattice_events);
 
     Beemaster::log("bro_slave.bro: bro_init() done");
 }
@@ -64,6 +70,11 @@ event Broker::outgoing_connection_broken(peer_address: string, peer_port: port, 
 # forwarding when some local connection is beeing logged. Throws an explicit beemaster event to forward.
 event Conn::log_conn(rec: Conn::Info) {
     event Beemaster::log_conn(rec);
+    event Beemaster::lattice_event(Beemaster::conninfo_to_alertinfo(rec), Beemaster::proto_to_string(rec$proto));
+}
+
+event udp_request(c: connection) {
+    event Beemaster::lattice_event(Beemaster::connection_to_alertinfo(c), Beemaster::proto_to_string(get_port_transport_proto(c$id$orig_p)));
 }
 
 event connection_SYN_packet(c: connection, pkt: SYN_packet) {

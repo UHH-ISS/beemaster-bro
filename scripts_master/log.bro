@@ -13,6 +13,7 @@ export {
       DIO_MYSQL_COMMAND_LOG,
       DIO_SMB_BIND_LOG,
       DIO_SMB_REQUEST_LOG,
+      ACU_ALERT_LOG,
       PORTSCAN_ALERT_LOG
       };
 
@@ -153,6 +154,11 @@ export {
       connector_id: string &log;
     };
 
+    type AcuAlertInfo: record {
+        ts: time &log;
+        attack: string &log;
+    };
+
     type PortscanAlertInfo: record {
         ts: time &log;
         attack: string &log;
@@ -171,6 +177,6 @@ event bro_init() &priority=5 {
     Log::create_stream(DIO_MYSQL_COMMAND_LOG, [$columns=DioMysqlCommandInfo, $path="dionaea_mysql_command"]);
     Log::create_stream(DIO_SMB_BIND_LOG, [$columns=DioSmbBindInfo, $path="dionaea_smb_bind"]);
     Log::create_stream(DIO_SMB_REQUEST_LOG, [$columns=DioSmbRequestInfo, $path="dionaea_smb_request"]);
+    Log::create_stream(ACU_ALERT_LOG, [$columns=AcuAlertInfo, $path="acu_alert"]);
     Log::create_stream(PORTSCAN_ALERT_LOG, [$columns=PortscanAlertInfo, $path="portscan_alert"]);
-
 }

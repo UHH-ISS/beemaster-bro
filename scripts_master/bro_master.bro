@@ -1,14 +1,15 @@
 @load ./beemaster_events
 @load ./beemaster_log
 @load ./beemaster_util
+
 @load ./log
 
 redef exit_only_after_terminate = T;
+
+# Broker setup
 # the port and IP that are externally routable for this master
 const public_broker_port: string = getenv("MASTER_PUBLIC_PORT") &redef;
 const public_broker_ip: string = getenv("MASTER_PUBLIC_IP") &redef;
-
-# the port that is internally used (inside the container) to listen to
 const broker_port: port = 9999/tcp &redef;
 redef Broker::endpoint_name = cat("bro-master-", public_broker_ip, ":", public_broker_port);
 
@@ -36,6 +37,9 @@ event bro_init() {
     # Subscribe to tcp events for logging
     Broker::subscribe_to_events_multi("beemaster/bro/tcp");
 
+    # Subscribe to lattice events for logging
+    Broker::subscribe_to_events_multi("beemaster/bro/lattice");
+
     # Subscribe to acu alerts
     Broker::subscribe_to_events_multi("beemaster/acu/alert");
 
@@ -48,7 +52,10 @@ event bro_done() {
     Beemaster::log("bro_master.bro: bro_done()");
 }
 
-event Beemaster::dionaea_access(timestamp: time, local_ip: addr, local_port: count, remote_hostname: string, remote_ip: addr, remote_port: count, transport: string, protocol: string, connector_id: string) {
+event Beemaster::dionaea_access(timestamp: time, local_ip: addr, local_port: count,
+    remote_hostname: string, remote_ip: addr, remote_port: count, transport: string,
+    protocol: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -57,7 +64,22 @@ event Beemaster::dionaea_access(timestamp: time, local_ip: addr, local_port: cou
     Log::write(Beemaster::DIO_ACCESS_LOG, rec);
 }
 
-event Beemaster::dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, md5hash: string, filelocation: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string,
+    length: count, origin: string, connector_id: string)
+{
+    local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
+    local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
+
+    local rec: Beemaster::DioBlackholeInfo = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $input=input, $length=length, $origin=origin, $connector_id=connector_id];
+
+    Log::write(Beemaster::DIO_BLACKHOLE_LOG, rec);
+}
+
+event Beemaster::dionaea_download_complete(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string,
+    url: string, md5hash: string, filelocation: string, origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
     local detection_rate: string;
@@ -94,7 +116,10 @@ event Beemaster::dionaea_download_complete(timestamp: time, id: string, local_ip
     }
 }
 
-event Beemaster::dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_download_offer(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string, url: string,
+    origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -103,7 +128,10 @@ event Beemaster::dionaea_download_offer(timestamp: time, id: string, local_ip: a
     Log::write(Beemaster::DIO_DOWNLOAD_OFFER_LOG, rec);
 }
 
-event Beemaster::dionaea_ftp(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, command: string, arguments: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_ftp(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string,
+    command: string, arguments: string, origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -112,7 +140,10 @@ event Beemaster::dionaea_ftp(timestamp: time, id: string, local_ip: addr, local_
     Log::write(Beemaster::DIO_FTP_LOG, rec);
 }
 
-event Beemaster::dionaea_mysql_command(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_mysql_command(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string, args: string,
+    origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -121,7 +152,10 @@ event Beemaster::dionaea_mysql_command(timestamp: time, id: string, local_ip: ad
     Log::write(Beemaster::DIO_MYSQL_COMMAND_LOG, rec);
 }
 
-event Beemaster::dionaea_login(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, username: string, password: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_login(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string,
+    username: string, password: string, origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -130,7 +164,10 @@ event Beemaster::dionaea_login(timestamp: time, id: string, local_ip: addr, loca
     Log::write(Beemaster::DIO_LOGIN_LOG, rec);
 }
 
-event Beemaster::dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, transfersyntax: string, uuid: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string,
+    transfersyntax: string, uuid: string, origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -139,7 +176,10 @@ event Beemaster::dionaea_smb_bind(timestamp: time, id: string, local_ip: addr, l
     Log::write(Beemaster::DIO_SMB_BIND_LOG, rec);
 }
 
-event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, opnum: count, uuid: string, origin: string, connector_id: string) {
+event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr, local_port: count,
+    remote_ip: addr, remote_port: count, transport: string, protocol: string,
+    opnum: count, uuid: string, origin: string, connector_id: string)
+{
     local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
     local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
 
@@ -148,13 +188,10 @@ event Beemaster::dionaea_smb_request(timestamp: time, id: string, local_ip: addr
     Log::write(Beemaster::DIO_SMB_REQUEST_LOG, rec);
 }
 
-event Beemaster::dionaea_blackhole(timestamp: time, id: string, local_ip: addr, local_port: count, remote_ip: addr, remote_port: count, transport: string, protocol: string, input: string, length: count, origin: string, connector_id: string) {
-    local lport: port = count_to_port(local_port, Beemaster::string_to_proto(transport));
-    local rport: port = count_to_port(remote_port, Beemaster::string_to_proto(transport));
-
-    local rec: Beemaster::DioBlackholeInfo = [$ts=timestamp, $id=id, $local_ip=local_ip, $local_port=lport, $remote_ip=remote_ip, $remote_port=rport, $transport=transport, $protocol=protocol, $input=input, $length=length, $origin=origin, $connector_id=connector_id];
-
-    Log::write(Beemaster::DIO_BLACKHOLE_LOG, rec);
+event Beemaster::acu_meta_alert(timestamp: time, attack: string) {
+    Beemaster::log("Got acu_meta_alert!");
+    local rec: Beemaster::AcuAlertInfo = [$ts=timestamp, $attack=attack];
+    Log::write(Beemaster::ACU_ALERT_LOG, rec);
 }
 
 event Beemaster::portscan_meta_alert(timestamp: time, attack: string, ips: vector of string) {
