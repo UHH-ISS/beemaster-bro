@@ -49,6 +49,7 @@ In case ```python``` is referencing ```python2``` by default, the `configure`-st
 
 Master and slave bro instances are encapsulated within docker containers. The library versions for the conainer installation should not be changed (eg. `libcaf` only works for v <= 0.14.5).
 
+<a name="start_scripts" />
 For both, master and slave, there exist predefined container startscripts:
 - Bro master: [start.sh](start.sh)
 - Bro slave: [start-slave.sh](start-slave.sh)
@@ -87,37 +88,37 @@ jemalloc:          false
 
 ### Manual build
 
+The purpose of a Beemaster Bro container is set at container build time. Therefore a Docker `build-arg` has to be provided. Eg: `docker build . -t master --build-arg PURPOSE=master`. (or `slave`, respectively). Different Bro scripts are loaded into the container, according to this argument.
 
 
-Es muss zur Build-Zeit des Containers entschieden werden, ob es sich um einen Master- oder einen Slave-Container handeln soll. Dafür muss ein Docker `build-arg` übergeben werden. Zum Beispiel: `docker build . -t master --build-arg PURPOSE=master`. Durch dieses Build-Argument werden unterschiedliche (Bro-) Skripte in den Container gelegt.
+### Manual start
+
+A couple of environment variables has to be provided during container start. Those vars are needed for routing inside the Beemaster cluster (accross physical hosts):
+
+| ENV VAR            | Example       | Details
+| ------------------ |:-------------:| -------
+| SLAVE_PUBLIC_IP    | 134.100.28.31 | The IP address of this slave. The slave uses this address for listening and publishes it to the Bro master. The master will then use address to share it with connectors, that then can contact the slave on that address.
+| SLAVE_PUBLIC_PORT  | 9991          | The listening port of this slave (see above).
+| MASTER_PUBLIC_IP   | 134.100.28.31 | The IP address of the master. The master uses this address for listening.
+| MASTER_PUBLIC_PORT | 9999          | The listening port of this master (see above).
 
 
-### Manueller Start
-
-Beim Start des Containers müssen Umgebungsvariablen übergeben werden. Diese Variablen sind zwingend für das Routing im Beemaster Netzwerk erforderlich:
-
-| ENV VAR            | Beispiel   | Details
-| ------------------ |:----------:| -------
-| SLAVE_PUBLIC_IP    | 172.17.0.3 | Die IP-Adresse unter der dieser Slave im Netzwerk erreichbar ist. Der Slave wird auf dieser IP aktiv lauschen. Er überträgt diese IP an den Master und der Master gibt diese z.B. an die Connectoren weiter, damit sie sich mit dem Slave verbinden können.
-| SLAVE_PUBLIC_PORT  | 9991       | Der Port unter dem dieser Slave im Netzwerk erreichbar ist. Siehe oben.
-| MASTER_PUBLIC_IP   | 172.17.0.1 | Die IP-Adresse unter der der Master im Netzwerk erreichbar ist. Der Master wird auf dieser IP aktiv lauschen.
-| MASTER_PUBLIC_PORT | 9999       | Der Port unter dem der Master im Netzwerk erreichbar ist. Siehe oben.
-
-Diese Docker-Umgebungsvariablen werden in den jeweiligen Startskripten für Master und Slave angewandt (siehe dort).
+These environment are set to a default value for the specific [start-scripts](#start_scripts).
 
 
-## Docker-Compose-Cluster
+## Docker-Compose cluster
 
-In diesem Repository befindet sich eine `docker-compose` yaml Datei: [docker-compose.yml](docker-compose.yml). Die Datei startet ein kleines Bro-Cluster, bestehend aus einem Master und zwei Slaves. Dabei wird die öffentliche IP des ISS-Projekt Servers (`134.100.28.31`) verwendet. Sowohl Slaves als auch Master verwenden diese IP für das Routing im öffentlichen Netzwerk.
+You can start a small Bro cluster by using the provided [docker-compose.yml](docker-compose.yml) file. The cluster consists of one Bro master and two slaves. The publicly routable IP address of the beemaster server (`134.100.28.31`) is used for all three components.
 
-##### Nutzung des Compose-Clusters
+##### Usage of the compose cluster
 
-- Start: `docker-compose up --build -d`: Baut und startet das Cluster; anschließender Fork als Daemon
-- Stop: `docker-compose down`: Stoppt und zerstört die Container
+- Start: `docker-compose up --build -d`: build and start the cluster; then daemonize process.
+- Stop: `docker-compose down`: stop and then destroy containers.
+- Inspect: `docker-compose logs -f`: tail the logs.
 
-Über Docker-Mountvolumes werden Ordner des Hostsystems in den Containern unter `/var/beemaster` für Master und Slave verfügbar gemacht. So kann auf die geschriebenen Logdateien auch von außerhalb der Container zugegriffen werden -- zum Beispiel der lesende Zugriff des CIMs.
+The folder path `/var/beemaster` of the hostsystem is mounted into the containers. This way it is possible to use the Bro logs written inside the container from the outside. The CIM uses those logs.
 
 
-[^1]: Für weitere Informationen zu Honeypot-Connectoren siehe: https://git.informatik.uni-hamburg.de/iss/mp-ids-hp
-[^2]: Für weitere Informationen zu ACUs (Alert Correlation Units) siehe: https://git.informatik.uni-hamburg.de/iss/mp-ids-acu
-[^3]: Für weitere Informationen zum CIM (Cyber Incident Monitor) siehe: https://git.informatik.uni-hamburg.de/iss/mp-ids-cim
+[^1]: More detailed information about honeypot connectors: https://git.informatik.uni-hamburg.de/iss/mp-ids-hp
+[^2]: More detailed information about ACUs (Alert Correlation Units): https://git.informatik.uni-hamburg.de/iss/mp-ids-acu
+[^3]: More detailed information about CIM (Cyber Incident Monitor): https://git.informatik.uni-hamburg.de/iss/mp-ids-cim
