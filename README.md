@@ -1,31 +1,31 @@
 # Beemaster Bro IDS Komponenten
 
-Im Projekt Beemaster wird das freie IDS [Bro](https://www.bro.org) verwendet. Bro kann mehrfach verwendet werden. Zu diesem Zweck werden einzelne Bro-Instanzen in Docker-Containern gekapselt.
+The opensource IDS [Bro](https://www.bro.org) is widely used within the Beemaster project. Bro plays a very central role, as communication and network analysis core. Bro is integrated into Beemaster in a containerized sense, featuring a variadic cluster design and different roles.
+
+## Bro Infrastructure & Role allocation
+
+By design, there has to be at least one Bro instance: the Master instance. Additionally, numerous Bro slave instances my be added freely. The master instance is responsible for cluster management and coordination. It can be seen as the Beemaster core. All bro slave instances, honeypot-connectors[^1] as well as ACUs[^2] must register themselves to the master. Thus, the master must be reachable for all those components (either via IP or hostname). That may as well be done via subnet reachability, as long as all components share the same network.
 
 
-## Bro Infrastruktur & Rollenverteilung
+##### Bro master tasks
 
-Das Setup des Projektes sieht vor, dass es mindestens eine Bro-Instanz gibt: den Master. Zusätzlich können beliebig viele Slaves gestartet werden. Der Bro-Master hat eine koordinierende Rolle im Zentrum von Beemaster. Beim Master registrieren sich alle Bro-Slaves sowie alle Honeypot-Connectoren[^1] und alle ACUs[^2]. Der Master muss zwingend für Slaves, Connectoren und ACUs erreichbar sein -- via Hostname / IP und Port. Das kann auch eine Subnet-IP sein, solange sich alle Komponenten im gleichen Subnet befinden.
+- Logging. Logfiles may then be processed by the CIM[^3]
+- Management of registered components, routing table & load-balancing of honeypots <-> bro slaves
+- Tunneling of slave events to registered ACUs (via Broker multihop)
+- Handling of honeypot events (fallback in case no slaves are registered)
 
-##### Aufgaben des Bro-Masters
+##### Bro slave tasks
 
-- Schreiben von Logfiles. Diese Logfiles können vom CIM[^3] eingelesen werden.
-- Verwaltung einer Routing-Tabelle & Load-Balancing von Honeypot-Connectoren zu verfügbaren Bro-Slaves
-- Tunneln von Slave-Events an die ACU (via Broker-Multihop)
-- Handhabung von Honeypot-Events, falls keine Slaves registriert sind (Fallback).
-
-##### Aufgaben eines Bro-Slaves
-
-- Handhabung von Honeypot-Events
-- Netzwerküberwachung des Hostsystems / Containers, auf dem der Slave läuft
-- Weiterleitung jeglicher Events an den Bro-Master
+- Handling of honeypot events
+- Network monitoring of the hostsysten / container on which the slave is running
+- Forwarding of all possible events to the Bro master instance
 
 
-## Lokale Installation von Bro
+## Local installation of Bro
 
-Die [offizielle Dokumentation](https://www.bro.org/development/projects/deep-cluster.html) enthält alle notwendigen Details für die Installation.
+The [official docs](https://www.bro.org/development/projects/deep-cluster.html) contain all necessary details for a manual installation.
 
-Im Projekt Beemaster werden spezielle Branches für Bro und Broker verwendet. Mit den folgenden Befehlen werden die projektrelevanten Branches ausgecheckt und installiert:
+For the Beemaster project, dedicated git branches for Bro and Broker have to be used. The following commands will checkout and install all project-relevant sources:
 
 ~~~~
 git clone --recursive https://github.com/bro/bro
@@ -42,19 +42,21 @@ make
 sudo make install
 ~~~~
 
-Falls ```python``` standardmäßig auf ```python2``` gesetzt ist, kann der configure Schritt vereinfacht und das ```--with-python``` kann weggelassen werden.
+In case ```python``` is referencing ```python2``` by default, the `configure`-step may be simplified and the ```--with-python``` flag may be opmitted.
 
-## Docker-Container
+## Docker container
 
-In Beemaster wird Bro (Master und Slave) in einem Container-Setup genutzt. Die Lib-Versionen sollten nicht verändert werden, Libcaf funktioniert nur mit v <= 0.14.5
 
-Für Bro-Master und Bro-Slaves gibt es fertige Startskripte, um einzelne Container zu starten.
-- Bro-Master: [start.sh](start.sh)
-- Bro-Slave: [start-slave.sh](start-slave.sh)
+Master and slave bro instances are encapsulated within docker containers. The library versions for the conainer installation should not be changed (eg. `libcaf` only works for v <= 0.14.5).
 
-##### Bro-Konfiguration
+For both, master and slave, there exist predefined container startscripts:
+- Bro master: [start.sh](start.sh)
+- Bro slave: [start-slave.sh](start-slave.sh)
 
-Bro im Container meldet folgende aktivierte / deaktivierte Features:
+##### Bro configuration
+
+Inside the container, bro features the following:
+
 ~~~~
 ====================|  Bro Build Summary  |=====================
 
@@ -83,7 +85,9 @@ jemalloc:          false
 ================================================================
 ~~~~
 
-### Manueller Build
+### Manual build
+
+
 
 Es muss zur Build-Zeit des Containers entschieden werden, ob es sich um einen Master- oder einen Slave-Container handeln soll. Dafür muss ein Docker `build-arg` übergeben werden. Zum Beispiel: `docker build . -t master --build-arg PURPOSE=master`. Durch dieses Build-Argument werden unterschiedliche (Bro-) Skripte in den Container gelegt.
 
