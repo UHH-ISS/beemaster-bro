@@ -1,31 +1,31 @@
-# Beemaster Bro IDS Komponenten
+# Beemaster Bro IDS Components[^0]
 
-The opensource IDS [Bro](https://www.bro.org) is widely used within the Beemaster project. Bro plays a very central role, as communication and network analysis core. Bro is integrated into Beemaster in a containerized sense, featuring a variadic cluster design and different roles.
+The open source IDS [Bro](https://www.bro.org) is widely used within the Beemaster project. Bro is the communication and network analysis core; hence it plays a central role. Bro is integrated into Beemaster in a containerized sense, featuring a variadic cluster design and different roles.
 
-## Bro Infrastructure & Role allocation
+## Bro Infrastructure & Role Allocation
 
-By design, there has to be at least one Bro instance: the Master instance. Additionally, numerous Bro slave instances my be added freely. The master instance is responsible for cluster management and coordination. It can be seen as the Beemaster core. All bro slave instances, honeypot-connectors[^1] as well as ACUs[^2] must register themselves to the master. Thus, the master must be reachable for all those components (either via IP or hostname). That may as well be done via subnet reachability, as long as all components share the same network.
+By design, there must be at least one Bro instance: the Master instance. Additionally, numerous Bro slave instances may be added freely. The master instance is responsible for cluster management and coordination. It can be seen as the Beemaster core. All Bro slave instances, honeypot connectors[^1] as well as ACUs[^2] must register themselves to the master. Thus, the master must be reachable for all those components (either via IP or hostname). That may as well be done via subnet reachability, as long as all components share the same network.
 
 
-##### Bro master tasks
+##### Bro Master Tasks
 
-- Logging. Logfiles may then be processed by the CIM[^3]
-- Management of registered components, routing table & load-balancing of honeypots <-> bro slaves
-- Tunneling of slave events to registered ACUs (via Broker multihop)
-- Handling of honeypot events (fallback in case no slaves are registered)
+- Logging: Logfiles may be processed by the CIM[^3]
+- Management of registered components, routing table & load balancing of honeypots <-> Bro slaves
+- Tunnelling of slave events to registered ACUs (via Broker multihop)
+- Handling of honeypot events (fall back in case no slaves are registered)
 
-##### Bro slave tasks
+##### Bro Slave Tasks
 
 - Handling of honeypot events
-- Network monitoring of the hostsysten / container on which the slave is running
+- Network monitoring of the host systen / container on which the slave is running
 - Forwarding of all possible events to the Bro master instance
 
 
-## Local installation of Bro
+## Local Installation of Bro
 
 The [official docs](https://www.bro.org/development/projects/deep-cluster.html) contain all necessary details for a manual installation.
 
-For the Beemaster project, dedicated git branches for Bro and Broker have to be used. The following commands will checkout and install all project-relevant sources:
+For the Beemaster project, dedicated git branches must be used for Bro and Broker. The following commands will checkout and install all project-relevant sources:
 
 ~~~~
 git clone --recursive https://github.com/bro/bro
@@ -42,21 +42,21 @@ make
 sudo make install
 ~~~~
 
-In case ```python``` is referencing ```python2``` by default, the `configure`-step may be simplified and the ```--with-python``` flag may be opmitted.
-
-## Docker container
+In case ```python``` is referencing ```python2``` by default, the `configure`-step may be simplified and the ```--with-python``` flag may be omitted.
 
 
-Master and slave bro instances are encapsulated within docker containers. The library versions for the conainer installation should not be changed (eg. `libcaf` only works for v <= 0.14.5).
+## Docker Container
+
+Master and slave Bro instances are encapsulated within Docker containers. The library versions for the container installation should not be changed (for instance, `libcaf` only works with version v <= 0.14.5).
 
 <a name="start_scripts" />
-For both, master and slave, there exist predefined container startscripts:
+For both, master and slave, exist predefined container start scripts:
 - Bro master: [start.sh](start.sh)
 - Bro slave: [start-slave.sh](start-slave.sh)
 
-##### Bro configuration
+##### Bro Configuration
 
-Inside the container, bro features the following:
+Inside the container, Bro features the following:
 
 ~~~~
 ====================|  Bro Build Summary  |=====================
@@ -86,39 +86,39 @@ jemalloc:          false
 ================================================================
 ~~~~
 
-### Manual build
+### Manual Build
 
-The purpose of a Beemaster Bro container is set at container build time. Therefore a Docker `build-arg` has to be provided. Eg: `docker build . -t master --build-arg PURPOSE=master`. (or `slave`, respectively). Different Bro scripts are loaded into the container, according to this argument.
+The purpose of the Beemaster Bro container must be set at build time. Therefore a Docker `build-arg` has to be provided. For example: `docker build . -t master --build-arg PURPOSE=master`. (or `slave`, respectively). Different Bro scripts are loaded into the container, according to this argument.
 
 
 ### Manual start
 
-A couple of environment variables has to be provided during container start. Those vars are needed for routing inside the Beemaster cluster (accross physical hosts):
+A couple of environment variables have to be provided during container start. Those variables are needed for routing inside the Beemaster cluster (across physical hosts):
 
 | ENV VAR            | Example       | Details
 | ------------------ |:-------------:| -------
-| SLAVE_PUBLIC_IP    | 134.100.28.31 | The IP address of this slave. The slave uses this address for listening and publishes it to the Bro master. The master will then use address to share it with connectors, that then can contact the slave on that address.
+| SLAVE_PUBLIC_IP    | 134.100.28.31 | The IP address of this slave. The slave uses this address for listening and publishes it to the Bro master. The master will then use this address to share it with connectors to allow them to contact the slave on that address.
 | SLAVE_PUBLIC_PORT  | 9991          | The listening port of this slave (see above).
 | MASTER_PUBLIC_IP   | 134.100.28.31 | The IP address of the master. The master uses this address for listening.
 | MASTER_PUBLIC_PORT | 9999          | The listening port of this master (see above).
 
 
-These environment are set to a default value for the specific [start-scripts](#start_scripts).
+These environment variables are set to a default value for the specific [start scripts](#start_scripts).
 
 
-## Docker-Compose cluster
+## Docker-Compose Cluster
 
-You can start a small Bro cluster by using the provided [docker-compose.yml](docker-compose.yml) file. The cluster consists of one Bro master and two slaves. The publicly routable IP address of the beemaster server (`134.100.28.31`) is used for all three components.
+You can start a small Bro cluster by using the provided [docker-compose.yml](docker-compose.yml) file. The cluster consists of one Bro master and two slaves. The publicly routable IP address of the Beemaster server (`134.100.28.31`) is used for all three components.
 
-##### Usage of the compose cluster
+##### Usage of the Compose Cluster
 
-- Start: `docker-compose up --build -d`: build and start the cluster; then daemonize process.
-- Stop: `docker-compose down`: stop and then destroy containers.
-- Inspect: `docker-compose logs -f`: tail the logs.
+- Start: `docker-compose up --build -d`: Build and start the cluster; Then daemonize the process.
+- Stop: `docker-compose down`: Stop and then destroy all previously started containers.
+- Inspect: `docker-compose logs -f`: Tail the logs.
 
-The folder path `/var/beemaster` of the hostsystem is mounted into the containers. This way it is possible to use the Bro logs written inside the container from the outside. The CIM uses those logs.
+The folder path `/var/beemaster` of the host system is mounted into the containers. Thus, it is possible to access the Bro log files written inside the container from the outside. The CIM uses these logs.
 
-
+[^0]: A German version of this readme can be found at: [README.md@80d534a](https://git.informatik.uni-hamburg.de/iss/mp-ids-bro/blob/80d534af23cb2753574e35bc10af91a32a8f0275/README.md) (remove this hint if the German version is outdated!)
 [^1]: More detailed information about honeypot connectors: https://git.informatik.uni-hamburg.de/iss/mp-ids-hp
 [^2]: More detailed information about ACUs (Alert Correlation Units): https://git.informatik.uni-hamburg.de/iss/mp-ids-acu
 [^3]: More detailed information about CIM (Cyber Incident Monitor): https://git.informatik.uni-hamburg.de/iss/mp-ids-cim
