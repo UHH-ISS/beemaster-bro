@@ -73,7 +73,7 @@ CPP:               /usr/bin/c++
 
 Broker:            true
 Broker Python:     true
-Broccoli:          true
+Broccoli:          false
 Broctl:            true
 Aux. Tools:        true
 
