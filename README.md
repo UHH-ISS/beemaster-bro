@@ -1,4 +1,4 @@
-# Beemaster Bro IDS Components[^0]
+# MP-IDS Bro[^0]
 
 The open source IDS [Bro](https://www.bro.org) is widely used within the Beemaster project. Bro is the communication and network analysis core; hence it plays a central role. Bro is integrated into Beemaster in a containerized sense, featuring a variadic cluster design and different roles.
 
