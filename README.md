@@ -118,6 +118,12 @@ You can start a small Bro cluster by using the provided [docker-compose.yml](doc
 
 The folder path `/var/beemaster` of the host system is mounted into the containers. Thus, it is possible to access the Bro log files written inside the container from the outside. The CIM uses these logs.
 
+## License attribution
+
+Bro IDS and Broker are licensed under the (a variant of) the BSD license ([Bro IDS](https://github.com/bro/bro/blob/master/COPYING), [Broker](https://github.com/bro/broker/blob/master/COPYING))
+
+Beemaster does solely use the Bro IDS and Broker standard installation. All credits regarding any of the above products to the respective creators of those projects. Beemaster does not claim to own, modify or redistribute any of the used software components. The applied MIT license only regards the work done during the Beemaster project, including but not limitting to the creation of custom Bro-scripts, shell-scripts and configuration files.
+
 [^0]: A German version of this readme can be found at: [README.md@80d534a](https://git.informatik.uni-hamburg.de/iss/mp-ids-bro/blob/80d534af23cb2753574e35bc10af91a32a8f0275/README.md) (remove this hint if the German version is outdated!)
 [^1]: More detailed information about honeypot connectors: https://git.informatik.uni-hamburg.de/iss/mp-ids-hp
 [^2]: More detailed information about ACUs (Alert Correlation Units): https://git.informatik.uni-hamburg.de/iss/mp-ids-acu
