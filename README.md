@@ -1,4 +1,4 @@
-# MP-IDS Bro[^0]
+# MP-IDS Bro
 
 The open source IDS [Bro](https://www.bro.org) is widely used within the Beemaster project. Bro is the communication and network analysis core; hence it plays a central role. Bro is integrated into Beemaster in a containerized sense, featuring a variadic cluster design and different roles.
 
@@ -108,7 +108,7 @@ These environment variables are set to a default value for the specific [start s
 
 ## Docker-Compose Cluster
 
-You can start a small Bro cluster by using the provided [docker-compose.yml](docker-compose.yml) file. The cluster consists of one Bro master and two slaves. The publicly routable IP address of the Beemaster server (`134.100.28.31`) is used for all three components.
+You can start a small Bro cluster by using the provided [docker-compose.yml](docker-compose.yml) file. The cluster consists of one Bro master and two slaves. The publicly routable IP address of the Beemaster server is used for all three components.
 
 ##### Usage of the Compose Cluster
 
@@ -120,11 +120,10 @@ The folder path `/var/beemaster` of the host system is mounted into the containe
 
 ## License attribution
 
-Bro IDS and Broker are licensed under the (a variant of) the BSD license ([Bro IDS](https://github.com/bro/bro/blob/master/COPYING), [Broker](https://github.com/bro/broker/blob/master/COPYING))
+Bro IDS and Broker are licensed under (a variant of) the BSD license ([Bro IDS](https://github.com/bro/bro/blob/master/COPYING), [Broker](https://github.com/bro/broker/blob/master/COPYING))
 
-Beemaster does solely use the Bro IDS and Broker standard installation. All credits regarding any of the above products to the respective creators of those projects. Beemaster does not claim to own, modify or redistribute any of the used software components. The applied MIT license only regards the work done during the Beemaster project, including but not limitting to the creation of custom Bro-scripts, shell-scripts and configuration files.
+Beemaster does solely use the Bro IDS and Broker standard installation. All credits regarding any of the above products to the respective creators of those projects. Beemaster does not claim to own, modify or redistribute any of the used software components. The applied MIT license only regards the work done during the Beemaster project, including but not limitting to the creation of custom Bro scripts, shell scripts and configuration files.
 
-[^0]: A German version of this readme can be found at: [README.md@80d534a](https://git.informatik.uni-hamburg.de/iss/mp-ids-bro/blob/80d534af23cb2753574e35bc10af91a32a8f0275/README.md) (remove this hint if the German version is outdated!)
-[^1]: More detailed information about honeypot connectors: https://git.informatik.uni-hamburg.de/iss/mp-ids-hp
-[^2]: More detailed information about ACUs (Alert Correlation Units): https://git.informatik.uni-hamburg.de/iss/mp-ids-acu
-[^3]: More detailed information about CIM (Cyber Incident Monitor): https://git.informatik.uni-hamburg.de/iss/mp-ids-cim
+[^1]: More detailed information about honeypot connectors: https://github.com/UHH-ISS/beemaster-hp
+[^2]: More detailed information about ACUs (Alert Correlation Units): https://github.com/UHH-ISS/beemaster-acu-fw
+[^3]: More detailed information about CIM (Cyber Incident Monitor): https://github.com/UHH-ISS/beemaster-cim
