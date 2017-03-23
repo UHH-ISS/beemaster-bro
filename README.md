@@ -1,4 +1,4 @@
-# MP-IDS Bro
+# Beemaster: Bro
 
 The open source IDS [Bro](https://www.bro.org) is widely used within the Beemaster project. Bro is the communication and network analysis core; hence it plays a central role. Bro is integrated into Beemaster in a containerized sense, featuring a variadic cluster design and different roles.
 
@@ -91,7 +91,7 @@ jemalloc:          false
 The purpose of the Beemaster Bro container must be set at build time. Therefore a Docker `build-arg` has to be provided. For example: `docker build . -t master --build-arg PURPOSE=master`. (or `slave`, respectively). Different Bro scripts are loaded into the container, according to this argument.
 
 
-### Manual start
+### Manual Start
 
 A couple of environment variables have to be provided during container start. Those variables are needed for routing inside the Beemaster cluster (across physical hosts):
 
@@ -118,7 +118,7 @@ You can start a small Bro cluster by using the provided [docker-compose.yml](doc
 
 The folder path `/var/beemaster` of the host system is mounted into the containers. Thus, it is possible to access the Bro log files written inside the container from the outside. The CIM uses these logs.
 
-## License attribution
+## License Attribution
 
 Bro IDS and Broker are licensed under (a variant of) the BSD license ([Bro IDS](https://github.com/bro/bro/blob/master/COPYING), [Broker](https://github.com/bro/broker/blob/master/COPYING))
 
